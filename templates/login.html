@@ -1,0 +1,63 @@
+<!doctype html>
+<head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+	<meta name="mobile-web-app-capable" content="yes">
+
+<script type="text/javascript">
+	document.documentElement.requestFullscreen();
+</script>
+<style type="text/css">
+	body {
+    	background-color: lightblue;
+	}
+</style>
+</head>
+
+<html>
+	<body>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-12">
+					<div class="panel-group" style="margin-top: 5%;">
+						<form method="post">
+							{{ form.csrf_token }}
+							<div class="form-group">
+								{% if error %}
+								 	<p style="color: red;">{{error}}</p>
+								{% endif %}
+								<div class="row">
+									<div class="col-4">
+										<p>{{form.user.label}}</p>
+									</div>
+									<div class="col-6">
+										<p>{{ form.user }}</p>
+									</div>	
+								</div>
+								<div class="row">
+									<div class="col-4">
+										<p>{{form.password.label}}</p>
+									</div>
+									<div class="col-6">
+										<p>{{ form.password }}</p>
+									</div>	
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-12">
+									<div class="panel-group" style="margin-top: 5%; text-align: center">
+								   		<button type="submit" class="btn btn-success">Submit</button>
+								   	</div>
+							   	</div>
+							</div>
+				        </form>
+				    </div>
+				</div>
+		    </div>
+		</div>
+	</body>
+</html>
