@@ -37,11 +37,22 @@ def login():
 def aplicacion1():
 	if 'context' in session:
 		form = BultosForm(request.form)
-		print('Yup, entraste bien %s' %session.get('user'))
+		if request.method == "POST":
+			if form.validate():
+				revisar_todo = request.form.get('revisar_todo',False)
+				if revisar_todo:
+					print('Se tickeó')
+				else:
+					print('No se tickeó')
+				salida = request.form.get('salida')
+				bandeja = request.form.get('bandeja')
+				print(revisar_todo,salida,bandeja)
+				form = BultosForm()
+		print('Cookie funcionando, session[\'context\']: %s.' %session.get('context'))
 		return render_template('app1.html', form=form)
 	else:
-		print('no we')
+		print('No se detectó la cookie, se redirecciona al login')
 		return redirect('login')
 
 if __name__ == '__main__':
-	app.run(host="192.168.1.170",port="8000")
+	app.run(host="192.168.1.150", port="8000")

@@ -1,12 +1,9 @@
 <!doctype html>
 <head>
 	<meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
-	<meta name="mobile-web-app-capable" content="yes">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+	<meta name="mobile-web-app-capable" content="yes"><!-- Esto es lo que hace que al hacer el acceso directo no salga la barra de url -->
 	
 <style type="text/css">
 	body {
@@ -14,132 +11,84 @@
 	}
 </style>
 
+<script type="text/javascript">
+</script>
+
 </head>
 
-
 <html>
-<div class="container-fluid" style="margin-top: 10%;">
-  	<div class="row">
-	    <div class="col-6">
-	    	<h3>REVISIÓN DE BULTOS</h3>
-	    </div>
-	    <div class="col-6">
-	    	<div class="row">
-				<div class="col-6">
-					<p>Empresa: </p>
-				</div>
-				<div class="col-6">
-					<p>{{session.context.empresa}}</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-6">
-					<p>Local: </p>
-				</div>
-				<div class="col-6">
-					<p>{{session.context.local}}</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-6">
-					<p>Usuario: </p>
-				</div>
-				<div class="col-6">
-					<p>{{session.context.user}}</p>
-				</div>
-			</div>
-		</div>
-  	</div>
-  	<div class="row">
-  		<div class="col-12">
-  			<div class="panel-group" style="margin-top: 5%;">
-				<form method="POST">
-					{{ form.csrf_token }}
-					<div class="row">
-						<div class="col-4">
-							<p>Revisar todo</p>
-						</div>
-						<div class="col-4">
-							<p>{{ form.revisar_todo }}</p>
-						</div>
-					</div>	
-					<div class="row">
-						<div class="col-4">
-							<p>Salida</p>
-						</div>
-						<div class="col-4">
-							<p>{{ form.salida }}</p>
-						</div>
-					</div>	
-					<div class="row">
-						<div class="col-4">
-							<p>Bandeja</p>
-						</div>
-						<div class="col-4">
-							<p>{{ form.bandeja }}</p>
-						</div>
-					</div>	
-					<div class="row" style="margin-top: 10%">
-						<div class="col-6">
-							<button type="submit" class="btn btn-success">Camión robado</button>
-						</div>
-						<div class="col-6">
-							<button type="submit" class="btn btn-success">Terminar</button>
-						</div>
+	<div class="container-fluid" style="margin-top: 10%;">
+	  	<div class="row">
+		    <div class="col-6">
+		    	<h3>REVISIÓN DE BULTOS</h3>
+		    </div>
+		    <div class="col-6">
+		    	<div class="row">
+					<div class="col-6">
+						<p style="font-weight: bold;">Empresa: </p>
 					</div>
-				</form>
-			</div>
-		</div>
-  	</div>
-</div>
-	<!--
-	<div class="container-fluid">
-		<div class="row">
-			<div class="col-md-6 col-sm-12 col-12">
-				<h1>REVISIÓN DE BULTOS</h1>
-			</div>
-			<div class="col-md-6 col-sm-12 col-12">
-				<div class="row">
-					<div class="col-md-6 col-sm-12 col-12">
-						<p>Empresa: </p>
-					</div>
-					<div class="col-md-6 col-sm-12 col-12">
-						<p>Empresa ejemplo</p>
+					<div class="col-6">
+						<p>{{session.context.empresa}}</p>
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-6 col-sm-12 col-12">
-						<p>Local: </p>
+					<div class="col-6">
+						<p style="font-weight: bold;">Local: </p>
 					</div>
-					<div class="col-md-6 col-sm-12 col-12">
-						<p>Local ejemplo</p>
+					<div class="col-6">
+						<p>{{session.context.local}}</p>
 					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-6 col-sm-12 col-12">
-						<p>Usuario: </p>
+					<div class="col-6">
+						<p style="font-weight: bold;">Usuario: </p>
 					</div>
-					<div class="col-md-6 col-sm-12 col-12">
-						<p>Usuario ejemplo</p>
+					<div class="col-6">
+						<p>{{session.context.user}}</p>
 					</div>
 				</div>
 			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-1 col-sm-12 col-12">
-				<form method="POST">
-					{{ form.csrf_token }}
-					<div class="row">
-						<div class="col-md-6 col-sm-12 col-12">
-							<p>Revisar todo</p>
+	  	</div>
+	  	<div class="row">
+	  		<div class="col-12">
+	  			<div class="panel-group" style="margin-top: 5%;">
+					<form method="POST">
+						{{ form.csrf_token }}
+						<div class="row">
+							<div class="col-4">
+								<p>Revisar todo</p>
+							</div>
+							<div class="col-4">
+								<p>{{ form.revisar_todo }}</p>
+							</div>
+						</div>	
+						<div class="row">
+							<div class="col-4">
+								<p>Salida</p>
+							</div>
+							<div class="col-4">
+								<p>{{ form.salida }}</p>
+							</div>
+						</div>	
+						<div class="row">
+							<div class="col-4">
+								<p>Bandeja</p>
+							</div>
+							<div class="col-4">
+								<p>{{ form.bandeja }}</p>
+							</div>
+						</div>	
+						<div class="row" style="margin-top: 10%">
+							<div class="col-7">
+								<button type="submit" class="btn btn-success">Camión robado</button>
+							</div>
+							<div class="col-4">
+								<button type="submit" class="btn btn-success">Terminar</button>
+							</div>
 						</div>
-						<div class="col-md-6 col-sm-12 col-12">
-							<p>{{ form.revisar_todo }}</p>
-						</div>
-					</div>	
-				</form>
+					</form>
+				</div>
 			</div>
-		</div>
+	  	</div>
 	</div>
-	-->
 </html>
