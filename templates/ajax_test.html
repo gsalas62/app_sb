@@ -16,9 +16,19 @@
 					a: $('input[name="a"]').val()
 				}, function(data){
 					$("#result").text(data.result);
+					console.log(data.mensaje);
+					if(data.mensaje == '0'){
+						console.log('llegué');
+						$("#a").attr('readonly', true);
+					}
 				});
 				return false;
 			});
+			$('#borrar').bind('click', function(){
+				if (confirm('¿Seguro que quiere borrar todo?')) {
+					$("#borrado").text('borrado');
+				}
+			})
 		});
 	</script>
 </head>
@@ -27,8 +37,10 @@
 <html>
 	<body>
 		<h1>Test servicio usando AJAX</h1>
-<p><input type=text size=5 name=a></p><br>
-<p><span id=result>servicio</span></p>
-<p><a href=# id=calculate>Pedir servicio</a></p>
+		<input type=text size=5 name=a id="a"><br>
+		<span id=result>servicio</span><br>
+		<a href=# id=calculate>Pedir servicio</a><br>
+		<a href=# id="borrar">BORRAR TODO</a><br>
+		<span id="borrado"></span>
 	</body>
 </html>

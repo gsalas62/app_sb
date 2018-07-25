@@ -58,8 +58,8 @@ def aplicacion1():
 @app.route('/_add_numbers')
 def service1():
 	a = request.args.get('a', 0, type=int)
-	producto = getProductById(a)
-	return jsonify(result=producto)
+	producto, mensaje = getProductById(a)
+	return jsonify(result=producto, mensaje=mensaje)
 
 @app.route('/ajax')
 def ajax_test():

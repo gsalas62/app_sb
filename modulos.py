@@ -34,8 +34,11 @@ def getProductById(id_producto):
 
 	# resultado sin tags
 	result = soup.find('result').get_text()
+	mensaje = 1
+	if result == 'PRODUCTO 1':
+		mensaje = 0
 
 	# se retorna
-	return result
+	return result, mensaje
 
 	# FALTA	manejar excepciones
