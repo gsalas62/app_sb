@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, render_template, request, flash, session
+from flask import Flask, redirect, url_for, render_template, request, flash, session, jsonify
 from forms import *
 from flask_wtf.csrf import CSRFProtect
 from config import Config
@@ -53,6 +53,17 @@ def aplicacion1():
 	else:
 		print('No se detectó la cookie, se redirecciona al login')
 		return redirect('login')
+
+
+@app.route('/_add_numbers')
+def service1():
+	a = request.args.get('a', 0, type=int)
+	producto = getProductById(a)
+	return jsonify(result=producto)
+
+@app.route('/ajax')
+def ajax_test():
+	return render_template('ajax_test.html')
 
 if __name__ == '__main__':
 	app.run(host="192.168.1.150", port="8000")
