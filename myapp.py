@@ -65,5 +65,10 @@ def service1():
 def ajax_test():
 	return render_template('ajax_test.html')
 
+@app.route('/loginx')
+def loginx():
+	return render_template('loginx.html')
+
 if __name__ == '__main__':
-	app.run(host="192.168.1.150", port="8000")
+	app.run(host="192.168.1.152",debug=True)
+	#app.run(host="192.168.1.150", port="8000")

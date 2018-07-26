@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Login Test</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <style type="text/css">
+    body{
+        background-color: #b2d9ff;
+    }
+    #rowx{
+        padding: 5px 5px 5px;
+    }
+    #colx{
+        padding: 10px 10px 10px;
+        background-color: #1a8dff;
+    }
+    #logo{
+        
+        width: 40%;
+        height: 40%;
+        margin-left: -40px;
+        margin-top: 10px;
+    }
+    label{
+        color: white;
+    }
+    </style>
+
+  </head>
+<body>
+    <div class="container">
+        <div class="row" style="margin-left: 0px;">
+                <img src="http://3.bp.blogspot.com/-aB0WAO16O5Q/TshNDlgrHgI/AAAAAAAAADc/Y7TihzUOmgg/s320/salcobrand.png" id="logo">
+        </div>
+        <div class="row" style="margin: auto;">
+            <div class="col">
+                <h2 style="color: #1a8dff;">Login</h2>
+            </div>
+        </div>
+        <div class="row" id="rowx">
+            <div class="container h-100" id="basex" >
+                <div class="d-flex align-items-center justify-content-center h-100">
+                    <div class="col" id="colx" style="border: 2px;">
+                        <form method="POST">
+                            <div class="form-group">
+                                <label for="formGroupExampleInput">Usuario</label>
+                                <input type="text" class="form-control" id="logInput" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="formGroupExampleInput">Contraseña</label>
+                                <input type="text" class="form-control" id="passInput" required>
+                            </div>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <button class="btn btn-default align-self-center p-2" type="submit" name="button">Ingresar</button>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--    JQUERY    -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+  </body>
+</html>
