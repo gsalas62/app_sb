@@ -1,9 +1,8 @@
-
 {% extends 'base.html' %}
 
 
 {% block title %}
-    Revisión bulto
+    Revisión Conenido
 {% endblock %}
 
 {% block header %}
@@ -18,7 +17,7 @@
 /* agrega una pequeña distancia entre filas de label-input */
 #colx .row{
     text-align: left;
-    margin-bottom: 25px;
+    margin-bottom: 10px;
     align-items: left;
 }
 /* crea un margen y el color de fondo col que contiene los campos */
@@ -78,7 +77,7 @@ label {
         <div class="col" id="fieldscol">
             <div class="d-flex align-items-center justify-content-center h-100">
                 <div class="col" id="colx">
-                    <div class="row" style="margin-top: 25px;">
+                    <div class="row" style="margin-top: 10px;">
                         <div class="col-5">
                             <label>Salida:</label>
                         </div>
@@ -100,6 +99,19 @@ label {
                         </div>
                         <div class="col">
                             <input type="text" class="form-control" id="productoInput" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-5">
+                            <label>Cantidad:</label>
+                        </div>
+                        <div class="col">
+                            <input type="number" class="form-control" id="cantidadInput" readonly="">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <input type="text" class="form-control" id="nomberInput" placeholder="Aspirina" readonly="">
                         </div>
                     </div>
                 </div>

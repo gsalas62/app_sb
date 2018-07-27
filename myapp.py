@@ -36,7 +36,7 @@ def ajax_test():
 	return render_template('ajax_test.html')
 
 # servicio que responde a la llamada de 'ajax'
-@app.route('/getproducto', methods=['GET','POST'])
+@app.route('/getproducto', methods=['GET'])
 def service1():
 	id_producto = request.args.get('id_producto', 0, type=int)
 	respuesta, mensaje = getProductById(id_producto)
@@ -47,7 +47,7 @@ def service1():
 
 # se corre el programa
 if __name__ == '__main__':
-	app.run(host=Vars.IP, port=Vars.PORT)
+	app.run(host=Vars.IP, port=Vars.PORT, debug=True)
 	#app.run(host="192.168.1.150", port="8000")
 
 
