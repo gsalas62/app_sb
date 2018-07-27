@@ -1,0 +1,20 @@
+/* color celeste de fondo */
+body{
+	background-color: #b2d9ff !important;
+}
+/* dimensiones y posición del logo
+falta saber sobre poner imagenes BIEN, mientras se deja así. */
+#logo{
+	width: 35%;
+	height: 35%;
+}
+#logorow{
+	margin-left: 0px;
+	margin-bottom: 5px
+	margin-top: 20px;
+	margin-bottom: 10px;
+}
+#master_row{
+	margin: auto;
+	min-height: 80px;
+}

@@ -1,46 +1,132 @@
-<!doctype html>
-<head>
-	<meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="mobile-web-app-capable" content="yes">
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+{% extends 'base.html' %}
 
+{% block title %}
+AJAX
+{% endblock %}
+
+{% block header %}
+
+	<style type="text/css">
+		.col-9{
+    	text-align: right;
+		}
+		#col_contexto{
+		    border: black 2px;
+		}
+
+		/* agrega una pequeña distancia entre filas de label-input */
+		#colx .row{
+		    text-align: left;
+		    margin-bottom: 25px;
+		    align-items: left;
+		}
+		/* crea un margen y el color de fondo col que contiene los campos */
+		#fieldscol{
+		    padding: 10px 10px 10px;
+		    background-color: #1a8dff;
+		    color: white;
+		}
+
+		/* crea un margen en el row base que contiene todo */
+		#baserow{
+		    padding: 10px 10px 10px;
+		}
+
+		input #form-control{
+		    margin-top: 5px;
+		    margin-bottom: 5px;
+		    display:inline-block;
+		    vertical-align:middle;
+		    margin-left:20px
+		}
+
+		label {
+		    display:inline-block;
+		    float: left;
+		    padding-top: 5px;
+		    text-align: left;
+		    width: 140px;
+		}
+	</style>
+
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script type="text/javascript">
 		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-	</script>
-	<script type="text/javascript">
 		$(function(){
-			$('a#calculate').bind('click', function(){
-				$.getJSON($SCRIPT_ROOT + '/_add_numbers',{
-					a: $('input[name="a"]').val()
-				}, function(data){
-					$("#result").text(data.result);
-					console.log(data.mensaje);
-					if(data.mensaje == '0'){
-						console.log('llegué');
-						$("#a").attr('readonly', true);
-					}
-				});
-				return false;
+			// se define funcion al event de presionar una tecla sobre el input 'idInput'
+			$('#idInput').keypress(function(event) {
+				// detecta además del keycode de un teclado físico, el keycode del teclado de android
+				var keycode = (event.keyCode ? event.keyCode : event.which);
+				 
+				// si es 'enter'
+				if (keycode == 13) {
+				 	console.log($(this).val());
+				 	// se crea la url para llamar 'getproducto' con id_producto como argumento
+				 	console.log($SCRIPT_ROOT);
+				 	$.getJSON($SCRIPT_ROOT + '/getproducto',{
+		    		id_producto: $("#idInput").val()
+		    		},	function(data){
+		    			// data devuelve data.respuesta y data.mensaje (ver método servicio1())
+			    		console.log(data);
+			    		// se cambia el valor de productinput por la respuesta que se obtiene
+			    		$("#productInput").val(data.respuesta);
+			    		// si el mensaje es 0 se levanta alerta
+			    		if(data.mensaje == 0){
+			    			alert('MENSAJE: ' + data.mensaje);
+			    		}
+		    		});
+				 }
 			});
-			$('#borrar').bind('click', function(){
-				if (confirm('¿Seguro que quiere borrar todo?')) {
-					$("#borrado").text('borrado');
-				}
-			})
+			// lo mismo pero en vez de al apretar enter, ocurre al clickear boton 'enviar'
+		    $('#boton').bind('click', function() {
+		    	console.log($("#idInput").val());
+		    	$.getJSON($SCRIPT_ROOT + '/getproducto',{
+		    		id_producto: $("#idInput").val()
+		    	},	function(data){
+		    		console.log(data);
+		    		$("#productInput").val(data.respuesta);
+		    		if(data.mensaje == 0){
+		    			alert('El mensaje retorno ' + data.mensaje);
+		    		}
+		    	});
+		    });
 		});
 	</script>
-</head>
 
+{% endblock %}
 
-<html>
-	<body>
-		<h1>Test servicio usando AJAX</h1>
-		<input type=text size=5 name=a id="a"><br>
-		<span id=result>servicio</span><br>
-		<a href=# id=calculate>Pedir servicio</a><br>
-		<a href=# id="borrar">BORRAR TODO</a><br>
-		<span id="borrado"></span>
-	</body>
-</html>
+{% block screen_name %}
+	<h4>Test de servicio usando AJAX</h4>
+{% endblock %}
+
+{% block field_container %}
+    <div class="row" id="baserow">
+        <div class="col" id="fieldscol">
+            <div class="d-flex align-items-center justify-content-center h-100">
+	                <div class="col" id="colx">
+	                    <div class="row" style="margin-top: 25px;">
+	                        <div class="col-5">
+	                            <label>ID PRODUCTO:</label>
+	                        </div>
+	                        <div class="col">
+	                            <input type="number" class="form-control" id="idInput" required>
+	                        </div>
+	                    </div>
+	                    <div class="row">
+	                        <div class="col">
+	                            <input type="text" class="form-control" id="productInput">
+	                        </div>
+	                    </div>
+	                </div>
+	            </form>
+            </div><!-- flex align-items-center -->
+        </div><!-- col -->
+    </div><!-- baserow -->    
+    <div class="row" style="margin-top: 10px;">
+        <div class="col">
+            <div class="center-block text-center">
+                <button type="" id="boton" class="btn btn-info" style="float: right;">Enviar</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
