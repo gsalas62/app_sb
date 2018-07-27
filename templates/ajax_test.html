@@ -71,9 +71,11 @@ AJAX
 			    		// se cambia el valor de productinput por la respuesta que se obtiene
 			    		$("#productInput").val(data.respuesta);
 			    		// si el mensaje es 0 se levanta alerta
-			    		if(data.mensaje == 0){
-			    			alert('MENSAJE: ' + data.mensaje);
-			    		}
+			    	if(data.mensaje == 0){
+		    			if(confirm('¿Seguro?')){
+		    				console.log('Sí');
+		    			}
+		    		}
 		    		});
 				 }
 			});
@@ -86,7 +88,9 @@ AJAX
 		    		console.log(data);
 		    		$("#productInput").val(data.respuesta);
 		    		if(data.mensaje == 0){
-		    			alert('El mensaje retorno ' + data.mensaje);
+		    			if(confirm('¿Seguro?')){
+		    				console.log('Sí');
+		    			}
 		    		}
 		    	});
 		    });

@@ -18,7 +18,7 @@ def getProductById(id_producto):
 
 	# respuesta (devuelve un html/xml)
 	response = requests.post(url,data=body,headers=headers)
-
+	print(response.content)
 	# se parsea la respuesta
 	soup = BeautifulSoup(str(response.content), "html.parser")
 

@@ -1,13 +1,13 @@
 from flask import Flask, redirect, url_for, render_template, request, flash, session, jsonify, Blueprint
 from forms import *
 from flask_wtf.csrf import CSRFProtect
-from config import Config
+from config import *
 from modulos import *
 
 app = Flask(__name__) 
 csrf = CSRFProtect() # Se instancia csrf (token de seguridad para métodos POST)
 csrf.init_app(app) # Se agrega csrf 
-app.config.from_object(Config) #Se configura la app usando la configuración de config.py
+app.config.from_object(DevelopmentConfig) #Se configura la app usando la configuración de config.py
 
 """
 En estos momentos las vistas no hacen nada
@@ -47,7 +47,7 @@ def service1():
 
 # se corre el programa
 if __name__ == '__main__':
-	app.run(host="192.168.1.152",debug=True)
+	app.run(host=Vars.IP, port=Vars.PORT)
 	#app.run(host="192.168.1.150", port="8000")
 
 
