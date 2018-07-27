@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- Esto es para que la pantalla haga resize dependiendo de la resolución del dispositvo -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Título -->
+    <title>{% block title %}{% endblock %} - Salcobrand</title>
+    <!-- Bloque header del hijo -->
+    {% block header %}
+    {% endblock %}
+    <!-- CSS de la base: background color, img size, entre otros. -->   
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    
+    <style type="text/css">
+
+      body{
+          background-color: #b2d9ff;
+      }
+      #rowx{
+          padding: 5px 5px 5px;
+      }
+      #colx{
+          padding: 10px 10px 10px;
+          background-color: #1a8dff;
+      }
+      #logo{
+          
+          width: 35%;
+          height: 35%;
+          margin-top: 10px;
+          margin-bottom: 10px;
+      }
+      label{
+          color: white;
+      }
+      footer {
+          background-color: #1a8dff;
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          height: 22px;
+          width: 100%;
+          overflow: hidden;
+          text-align: center;
+          color: white;
+      }
+    </style>
+
+  </head>
+
+  <!--
+  La pantalla se compone de un contenedor que tiene los siguientes bloques:
+  ------------------------
+  |row { IMAGEN (base) }
+  |row {
+  |col: NOMBRE DE PANTALLA (hijo) | col: INFO CONTEXTO (hijo) |
+  |}
+  |row {
+  |container: conjunto de campos (hijo)
+  |}
+  |footer: {texto (base)} 
+
+  -->
+  <body>
+    <!-- Container base -->
+    <div class="container">
+      <!-- row logo -->
+      <div class="row" style="margin-left: 0px; margin-bottom: 5px">
+              <img src="http://3.bp.blogspot.com/-aB0WAO16O5Q/TshNDlgrHgI/AAAAAAAAADc/Y7TihzUOmgg/s320/salcobrand.png" id="logo">
+      </div>
+      <!-- row screen name | info de contexto -->
+      <div class="row" style="margin: auto; min-height: 80px;">
+          <div class="col-5">
+            {% block screen_name %}
+            {% endblock %}
+          </div>
+          <div class="col-7" id="col_contexto">
+            {% block info_contexto %}
+            {% endblock %}
+          </div>
+      </div>
+      <!-- row container -->
+      <div class="row">
+          <div class="container h-100">
+            {% block field_container %}
+            {% endblock %}
+          </div>
+      </div>
+      <footer>
+          footer
+      </footer>
+    </div>
+
+<!--    JQUERY    -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+  </body>
+</html>

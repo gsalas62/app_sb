@@ -69,6 +69,14 @@ def ajax_test():
 def loginx():
 	return render_template('loginx.html')
 
+
+@app.route('/base')
+def base():
+	return render_template('base.html')
+@app.route('/revision')
+def revision():
+	return render_template('revision_bulto.html')
+
 if __name__ == '__main__':
 	app.run(host="192.168.1.152",debug=True)
 	#app.run(host="192.168.1.150", port="8000")

@@ -1,3 +1,4 @@
+<!--
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Login Test</title>
 
-    <!-- Bootstrap -->
+    
     <link href="css/bootstrap.min.css" rel="stylesheet"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -68,9 +69,36 @@
         </div>
     </div>
 
-<!--    JQUERY    -->
+    JQUERY
     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
   </body>
 </html>
+-->
+
+{% extends 'base.html' %}
+
+{% block screen_name %}
+<h2 style="color: #1a8dff;">Login</h2>
+{% endblock %}
+
+{% block field_container %}
+<div class="d-flex align-items-center justify-content-center h-100">
+    <div class="col" id="colx" style="\border: 2px;">
+        <form method="POST">
+            <div class="form-group">
+                <label for="formGroupExampleInput">Usuario</label>
+                <input type="text" class="form-control" id="logInput" required>
+            </div>
+            <div class="form-group">
+                <label for="formGroupExampleInput">Contraseña</label>
+                <input type="text" class="form-control" id="passInput" required>
+            </div>
+        <div class="d-flex align-items-center justify-content-center">
+            <button class="btn btn-default align-self-center p-2" type="submit" name="button">Ingresar</button>
+        </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
