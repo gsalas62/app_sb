@@ -5,32 +5,119 @@
 {% endblock %}
 
 {% block header %}
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+	<script type="text/javascript">
+		$(function(){
+
+			$("#loginInput").focus();
+
+			$("#loginInput").keypress(function(event) {
+
+				// detecta además del keycode de un teclado físico, el keycode del teclado de android
+				var keycode = (event.keyCode ? event.keyCode : event.which);
+				 
+				// si es 'enter' y el largo es > 0
+				if (keycode == 13 && $(this).val().length > 0) {
+					$("#passwordInput").focus();
+				}
+			});
+
+			$("#passwordInput").keypress(function(event){
+
+				// detecta además del keycode de un teclado físico, el keycode del teclado de android
+				var keycode = (event.keyCode ? event.keyCode : event.which);
+				 
+				// si es 'enter' y el largo es > 0
+				if (keycode == 13 && $(this).val().length > 0) {
+					validarLogin();
+				}
+			});
+
+			$("#ingresarId").bind('click', function(event){
+				validarLogin();
+			});
+		});
+		function validarLogin(){
+			user = $("#loginInput").val();
+			password = $("#passwordInput").val();
+			/* TOKEN DE SEGURIDAD */
+			var csrf_token = "{{ csrf_token() }}";
+		    $.ajaxSetup({
+		        beforeSend: function(xhr, settings) {
+		            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+		                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+		            }
+		        }
+		    });
+		    /* Llamado a ajax */
+			$.ajax({
+				data: JSON.stringify({ 
+							'user' : user, 
+							'password': password
+						}),
+				type: 'POST',
+				url: "{{ url_for('validar_login') }}",
+				contentType: 'application/json',
+			    success: function(result) {
+					console.log(result['data']);
+					var obj = $.parseJSON(result['data']);
+					console.log(obj['cod_status']);
+					/*
+					Si el mensaje es 1 (error):
+					se muestra alerta con el mensaje
+					se dejan los campos de login y password en blanco
+					se pone el focus en el usuario	
+					*/
+					if(obj['cod_status'] == 1){
+						alert(obj['msg_status']);
+						$("#loginInput").val('');
+						$("#passwordInput").val('');
+						$("#loginInput").focus();
+					}
+					else{
+						$.ajax({
+							data: JSON.stringify({
+										'id_conn': obj['id_conn']
+									}),
+							type: 'POST',
+							url: "{{ url_for('set_info_contexto') }}",
+							contentType: 'application/json',
+							success: function(result){
+								window.location = result;
+							}
+						});
+						// Llamar servicio para ingreso de login
+					}
+			    }
+			});
+			return this;
+		};
+	</script>
 	<style type="text/css">
 		#fieldscol{
 		    padding: 10px 10px 10px;
 		    background-color: #1a8dff;
 		    color: white;
 		}
-
 	</style>
 {% endblock %}
 
 {% block field_container %}
 <div class="d-flex align-items-center justify-content-center h-100">
     <div class="col" id="fieldscol">
-	    <form class="form-signin" method="POST" role="form">
-	            <div class="form-group">
-	                <label for="logInput">Usuario:</label>
-	                <input type="text" class="form-control" id="logInput" required autofocus>
-	            </div>
-	            <div class="form-group">
-	                <label for="passInput">Contraseña:</label>
-	                <input type="password" class="form-control" id="passInput" required>
-	            </div>
-	        <div class="d-flex align-items-center justify-content-center">
-	            <button class="btn btn-default align-self-center p-2" type="submit" name="button">Ingresar</button>
-	        </div>
-	    </form>
+		<meta name="csrf-token" content="{{ csrf_token() }}">
+	    <div class="form-group">
+	        <label for="logInput">Usuario:</label>
+	        <input type="text" class="form-control" id="loginInput" required autofocus>
+	    </div>
+	    <div class="form-group">
+            <label for="passInput">Contraseña:</label>
+            <input type="password" class="form-control" id="passwordInput" required>
+        </div>
+	    <div class="d-flex align-items-center justify-content-center">
+	        <button class="btn btn-default align-self-center p-2" type="" id="ingresarId">Ingresar</button>
+        </div>
     </div>
 </div>
 {% endblock %}
