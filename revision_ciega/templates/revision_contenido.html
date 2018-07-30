@@ -49,6 +49,7 @@ label {
     width: 140px;
 }
 </style>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 {% endblock %}
 
 {% block screen_name %}
@@ -60,7 +61,7 @@ label {
     {% for key,value in contexto.items() %}
     <div class="row">
         <div class="col-3">{{key}}:</div>
-        <div class="col-9">{{value}}</div>
+        <div class="col-9" id="id_{{key}}">{{value}}</div>
     </div>
     {% endfor %}
 {% endblock %}

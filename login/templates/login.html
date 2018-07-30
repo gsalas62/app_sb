@@ -60,7 +60,7 @@
 							'password': password
 						}),
 				type: 'POST',
-				url: "{{ url_for('validar_login') }}",
+				url: "{{ url_for('login.validar_login') }}",
 				contentType: 'application/json',
 			    success: function(result) {
 					console.log(result['data']);
@@ -78,20 +78,8 @@
 						$("#passwordInput").val('');
 						$("#loginInput").focus();
 					}
-					else{
-						$.ajax({
-							data: JSON.stringify({
-										'id_conn': obj['id_conn']
-									}),
-							type: 'POST',
-							url: "{{ url_for('set_info_contexto') }}",
-							contentType: 'application/json',
-							success: function(result){
-								window.location = result;
-							}
-						});
-						// Llamar servicio para ingreso de login
-					}
+					
+
 			    },
 			    error: function(XMLHttpRequest, textStatus, errorThrown) { 
 			        alert("Status: " + textStatus);
