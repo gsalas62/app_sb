@@ -13,7 +13,6 @@
 			$("#loginInput").focus();
 
 			$("#loginInput").keypress(function(event) {
-
 				// detecta además del keycode de un teclado físico, el keycode del teclado de android
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				 
@@ -89,7 +88,11 @@
 						});
 						// Llamar servicio para ingreso de login
 					}
-			    }
+			    },
+			    error: function(XMLHttpRequest, textStatus, errorThrown) { 
+			        alert("Status: " + textStatus);
+			        alert("Error: " + errorThrown);
+			    }       
 			});
 			return this;
 		};

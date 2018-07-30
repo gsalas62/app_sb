@@ -1,0 +1,36 @@
+crear /etc/apache2/sites-avaibles/tu_config.conf
+de la forma:
+
+<VirtualHost *:80>
+    ServerName yourdomain.com
+    ServerAdmin admin@yourdomain.com
+    WSGIScriptAlias / /path/to/wsgi/app.wsgi
+    <Directory /path/to/wsgi/dir>
+    	Require all granted
+    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    LogLevel warn
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
+se habilita en el apache:
+
+sudo a2ensite tu_config.conf
+
+crear archivo *.wsgi en el path descrito anteriormente de la forma
+
+#!/usr/bin/python
+import sys
+sys.path.insert(0,"/path/to/app/dir")
+
+from main_file import app as application
+
+###
+Donde main_file es el archivo donde se instancia la app = Flask()
+debe tener
+
+if __init__ == '__name__':
+	app.run()
+
+Si uno quiere poner argumentos dentro del run (ejemplo app.run(Debug=True)), 
+cambiar de la forma app.debug = True

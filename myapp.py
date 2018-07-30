@@ -4,19 +4,23 @@ from flask_wtf.csrf import CSRFProtect # protector
 from config import * # config local
 from modulos import * # modulos hechos por nosotros
 import json #para parsear json que llegan como post 
+import timeit
+from paths import *
 
 app = Flask(__name__) 
 csrf = CSRFProtect() # Se instancia csrf (token de seguridad para métodos POST)
 csrf.init_app(app) # Se agrega csrf 
 app.config.from_object(DevelopmentConfig) #Se configura la app usando la configuración de config.py
+app.debug = True
 
 """
 En estos momentos las vistas no hacen nada
 Solo renderizan los html
 """
+
 #vista de login
-@app.route('/login', methods=['POST', 'GET'])
-def loginx():
+@app.route('/login')
+def login():
 	session.clear()
 	return render_template('login.html')
 
@@ -29,6 +33,15 @@ def revision_bulto():
 		return redirect('login')
 		
 	return render_template('revision_bulto.html', contexto=contexto)
+
+@app.route('/menu')
+def menu():
+	contexto = session.get('contexto', None)
+	id_conn = session.get('id_conn', None)
+	paths = Paths.apps
+	if id_conn is None:
+		return redirect('login')
+	return render_template('menu.html', apps=paths)
 
 #vista de revisión de contenido
 @app.route('/revision_contenido')
@@ -43,6 +56,8 @@ def revision_contenido():
 # servicio para validar login
 @app.route('/validar_login', methods=['POST'])
 def validar_login():
+	start = timeit.default_timer()
+
 	load = request.get_json()
 
 	# se obiene el 'nombre' del load
@@ -57,7 +72,8 @@ def validar_login():
 
 	# se define el data
 	data = {'data': info}
-
+	end = timeit.default_timer()
+	print('Servicio validar login tardó: ' + str(end-start) + 's.')
 	# se manda de vuelta
 	return jsonify(data)
 
@@ -74,7 +90,7 @@ def set_info_contexto():
 	session['contexto'] = respuesta
 	session['id_conn'] = id_conn
 	
-	return url_for('revision_contenido')
+	return url_for('menu')
 	# se manda de vuelta
 
 
@@ -102,7 +118,7 @@ def ajax_post():
 @csrf.exempt
 @app.route('/servicio', methods=['POST'])
 def servicio():
-
+	start = timeit.default_timer()
 	# se obtiene el json
 	load = request.get_json()
 
@@ -121,21 +137,17 @@ def servicio():
 
 	# se define el data
 	data = {'data': info}
+	end = timeit.default_timer()
 
+	print('SERVICIO TARDÓ: ' + str(end - start))
 	# se manda para 
 	return jsonify(data)
 
 ######
 
-@app.route('/camara')
-def camara():
-	return render_template('camara.html')
-
-
-
 # se corre el programa
 if __name__ == '__main__':
-	app.run(host=Vars.IP, port=Vars.PORT, debug=True)
+	app.run()
 	#app.run(host="192.168.1.150", port="8000")
 
 
