@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block header %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/revision_bulto.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('revision_ciega.static', filename='css/revision_bulto.css') }}">
 {% endblock %}
 
 {% block screen_name %}
@@ -16,20 +16,12 @@
 
 {% block info_contexto %}
 <!-- info de contexto -->
-{#
+{% for key, value in contexto.items() %}
     <div class="row">
-        <div class="col-3">Empresa:</div>
-        <div class="col-9">1</div>
+        <div class="col-3">{{key}}:</div>
+        <div class="col-9">{{value}}</div>
     </div>
-    <div class="row">
-        <div class="col-3">Local:</div>
-        <div class="col-9">1</div>
-    </div>
-    <div class="row">
-        <div class="col-3">Usuario:</div>
-        <div class="col-9">FRSALASR </div>
-    </div>
-#}
+{% endfor %}
 {% endblock %}
 
 {% block field_container %}

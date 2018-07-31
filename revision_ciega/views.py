@@ -3,14 +3,20 @@ from flask import Flask, redirect, url_for, render_template, request, flash, ses
 from app_sb import modulos as global_modulos # modulos hechos por nosotros (servicios, etc)
 #import json # para manejar json's
 
-revision_ciega = Blueprint('revision_ciega', __name__,template_folder='templates')
+revision_ciega = Blueprint('revision_ciega',
+						   __name__,
+						   template_folder='templates',
+						   static_folder='static',
+						   static_url_path='/static/')
 
-@revision_ciega.route('/revision_bulto')
+@revision_ciega.route('/revision_bulto/')
 def revision_bulto():
+	"""
 	id_conn = session.get('id_conn', None)
 	if id_conn is None:
 		return redirect('login')
-	
+	"""
+	id_conn = 0
 	contexto = global_modulos.getInfoContexto(id_conn)
 
 	return render_template('revision_bulto.html', contexto=contexto)

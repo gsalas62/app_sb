@@ -3,7 +3,11 @@ from modulos import * # modulos hechos por nosotros (servicios, etc)
 from .paths import Paths
 from app_sb import modulos as global_modulos
 
-menu = Blueprint('menu', __name__, template_folder='templates')
+menu = Blueprint('menu',
+				 __name__,
+				 template_folder='templates',
+   			     static_folder='static',
+				 static_url_path='/static/')
 
 @menu.route('/menu')
 def _menu():
