@@ -8,7 +8,9 @@ login = Blueprint('login', __name__,template_folder='templates')
 #vista de login
 @login.route('/login')
 def _login():
+	# borra todas las cookies al entrar
 	session.clear()
+	# renderiza template
 	return render_template('login.html')
 	
 # método que es llamado por ajax desde template login.html

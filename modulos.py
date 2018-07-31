@@ -1,7 +1,6 @@
 import requests # Para hacer el request al servicio 
 from bs4 import BeautifulSoup # Para parsear el request
 
-
 # servicio que devuelve producto dado un id
 # se ingresa una url (del servicio) y se definen los headers y el body
 # dentro del body se agrega el id del producto que se ingresa como argumento 

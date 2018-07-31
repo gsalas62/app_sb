@@ -13,14 +13,14 @@
 
 	<script type="text/javascript">
 		$(function(){
-
+			// Cuando se carga la página se pone como focus el input del login
 			$("#loginInput").focus();
 
 			$("#loginInput").keypress(function(event) {
-				// detecta además del keycode de un teclado físico, el keycode del teclado de android
+				// Detecta además del keycode de un teclado físico, el keycode del teclado de android
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				 
-				// si es 'enter' y el largo es > 0
+				// Si es 'enter' y el largo es > 0 pasa el focus al input del password (equivalente al tab)
 				if (keycode == 13 && $(this).val().length > 0) {
 					$("#passwordInput").focus();
 				}
@@ -28,10 +28,10 @@
 
 			$("#passwordInput").keypress(function(event){
 
-				// detecta además del keycode de un teclado físico, el keycode del teclado de android
+				// Detecta además del keycode de un teclado físico, el keycode del teclado de android
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				 
-				// si es 'enter' y el largo es > 0
+				// Si es 'enter' y el largo es > 0 llama la función validarLogin()
 				if (keycode == 13 && $(this).val().length > 0) {
 					validarLogin();
 				}
@@ -41,6 +41,10 @@
 				validarLogin();
 			});
 		});
+		/*
+		Función que toma los valores de los input '#loginInput' y '#passwordInput' y los envía
+		usando ajax al path /validar_login, donde se hará uso del servicio para validar o no las credenciales
+		*/ 
 		function validarLogin(){
 			user = $("#loginInput").val();
 			password = $("#passwordInput").val();
@@ -55,6 +59,15 @@
 		    });
 		    /* Llamado a ajax */
 			$.ajax({
+				/* 
+				Se llena el load con el user/pass 
+				Se define tipo 'POST'
+				Se define header 'application/json'
+				Se define url
+					OJO: con los blueprints ya basta con el nombre de la vista para hacer uso de url_for 
+					(no basta con url_for('validar_login')), ahora hay que definir a que blueprint le corresponde esa url (independiente de que sea al mismo blueprint),
+					poniendolo de la forma blueprint.vista, en este caso validar_login le corresponde al blueprint 'login', por se pone como argumento 'login.validar_login'. 
+				*/
 				data: JSON.stringify({ 
 							'user' : user, 
 							'password': password
@@ -62,15 +75,29 @@
 				type: 'POST',
 				url: "{{ url_for('login.validar_login') }}",
 				contentType: 'application/json',
+				/* Si es que json devuelve algo */
 			    success: function(result) {
 					console.log(result['data']);
+					/* Se parsea el result que llegó desde la llamada del ajax */
 					var obj = $.parseJSON(result['data']);
-					console.log(obj['cod_status']);
+					/* 
+					La llamada usando ajax devuelve obj['url'] si las credenciales son válidas,
+					en otro caso devuelve ['cod_status'] y ['msg_status'] (siempre y cuando no hay error).
+					De esta forma el backend hizo todo el webeo de ver que devolvió el servicio.
+					Además el backend ya definió una cookie con la id_conn, solo necesita redireccionar al menú.
+					*/
+
 					/*
-					Si el mensaje es 1 (error):
-					se muestra alerta con el mensaje
-					se dejan los campos de login y password en blanco
-					se pone el focus en el usuario	
+					Si es que le llegó una key 'url' se redirecciona al menú.
+					*/
+					if(obj.hasOwnProperty('url')){
+						window.location = obj['url'];
+					}
+					/*
+					En otro caso le llegó obj['cod_status'] == 1
+					Se muestra alerta con el mensaje
+					Se dejan los campos de login y password en blanco
+					Se pone el focus en el usuario	
 					*/
 					if(obj['cod_status'] == 1){
 						alert(obj['msg_status']);
@@ -78,14 +105,17 @@
 						$("#passwordInput").val('');
 						$("#loginInput").focus();
 					}
-					
-
 			    },
+			    /*
+			    Error cuando falla el ajax, ocurre cuando el servicio no devuelve nada.
+				ejemplo: cuando el servicio está abajo, no hay conexión a internet 
+				*/
 			    error: function(XMLHttpRequest, textStatus, errorThrown) { 
 			        alert("Status: " + textStatus);
 			        alert("Error: " + errorThrown);
 			    }       
 			});
+			// Buenas prácticas recomendaban retorntar this, ni idea porqué. 
 			return this;
 		};
 	</script>

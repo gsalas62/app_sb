@@ -1,0 +1,243 @@
+<head>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <!-- Pantalla haga resize dependiendo de la resolución del dispositvo -->
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Ícono de la aplicación -->
+        <link rel="shortcut icon" href="{{url_for('static', filename='img/favicon.ico')}}">
+        <!-- Ícono en la home screen -->
+        <link rel="apple-touch-icon" sizes="128x128" href="{{ url_for('static', filename='img/desktop_icon.png')}}">
+        <!-- Acceso directo no sale con la barra de url usando chrome en android-->
+        <meta name="mobile-web-app-capable" content="yes">
+        <!-- Título -->
+        <title>{% block title %}{% endblock %} - Salcobrand</title>
+        
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+        <!-- Bloque header del hijo.
+        Aquí el hijo puede agregar styles propios u otros headers que se necesiten. -->
+    
+        <style type="text/css">
+ /*!
+ * Start Bootstrap - Simple Sidebar (https://startbootstrap.com/template-overviews/simple-sidebar)
+ * Copyright 2013-2017 Start Bootstrap
+ * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-simple-sidebar/blob/master/LICENSE)
+ */
+
+body {
+  overflow-x: hidden;
+  background-color: #b2d9ff;
+}
+
+#wrapper {
+  padding-left: 0;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+}
+
+#wrapper.toggled {
+  padding-left: 250px;
+}
+
+#sidebar-wrapper {
+  z-index: 1000;
+  position: fixed;
+  left: 250px;
+  width: 0;
+  height: 100%;
+  margin-left: -250px;
+  overflow-y: auto;
+  background: #1a8dff;
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+  width: 250px;
+}
+
+#page-content-wrapper {
+  width: 100%;
+  position: absolute;
+  padding: 15px;
+}
+
+#wrapper.toggled #page-content-wrapper {
+  position: absolute;
+  margin-right: -250px;
+}
+
+
+/* Sidebar Styles */
+
+.sidebar-nav {
+  position: absolute;
+  top: 0;
+  width: 250px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sidebar-nav li {
+  text-indent: 20px;
+  line-height: 40px;
+}
+
+.sidebar-nav li a {
+  display: block;
+  text-decoration: none;
+  color: white;
+}
+
+.sidebar-nav li a:hover {
+  text-decoration: none;
+  color: white;
+  background: #0f5499;
+}
+
+.sidebar-nav>.sidebar-brand {
+  height: 65px;
+  font-size: 18px;
+  line-height: 60px;
+  background-color: #1262b2;
+  color: white;
+}
+
+.sidebar-nav>.sidebar-brand a:hover {
+  color: #fff;
+  background: none;
+}
+
+@media(min-width:768px) {
+  #wrapper {
+    padding-left: 0;
+  }
+  #wrapper.toggled {
+    padding-left: 250px;
+  }
+  #sidebar-wrapper {
+    width: 0;
+  }
+  #wrapper.toggled #sidebar-wrapper {
+    width: 250px;
+  }
+  #page-content-wrapper {
+    padding: 20px;
+    position: relative;
+  }
+  #wrapper.toggled #page-content-wrapper {
+    position: relative;
+    margin-right: 0;
+  }
+}
+</style>
+<script type="text/javascript">
+    $( document ).ready(function() {
+        $("#sidebar").toggleClass("toggle");
+    });
+</script>
+    
+</head>
+<body>
+
+<body>
+
+    <div id="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <ul class="sidebar-nav">
+                <li class="sidebar-brand">
+                    <div class="row">
+                        <div class="col">
+                            Menú
+                        </div>
+                        <div class="col">
+                            asdas
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Revisión Ciega</a>
+                    <ul class="collapse list-unstyled" id="pageSubmenu">
+                        <li>
+                            <a href="{{url_for('revision_ciega.revision_bulto')}}">Recepción de Bulto</a>
+                        </li>
+                        <li>
+                            <a href="{{url_for('revision_ciega.revision_contenido')}}">Recepción de Contenido</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <!-- /#sidebar-wrapper -->
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-blue">
+                <button class="navbar-toggler" href="#menu-toggle" type="button" id="menu-toggle" style="background-color: white;">
+                    <span class="navbar-toggler-icon"></span>
+                    Menú
+                </button>
+                <button class="navbar-toggler" href="#menu-toggle" type="button" id="menu-toggle" style="background-color: white;">
+                    Perfil
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </nav>
+            <div class="row">
+                <div class="col" style="text-align: center;">
+                    <h2>Revisión Ciega</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col" style="text-align: center;">
+                    <img src="{{url_for('static', filename='img/logo.png')}}" style="width: 40%">
+                </div>
+            </div>
+            <div class="row" id="baserow">
+                <div class="col" id="fieldscol">
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <div class="col" id="colx"  style="background-color: white">
+                            <div class="row" style="margin-top: 10px;">
+                                {% for key, item in contexto.items() %}
+                                <div class="col-5">
+                                    <p>{{key}}</p>
+                                </div>
+                                <div class="col">
+                                    <p>{{value}}</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div><!-- flex align-items-center -->
+                </div><!-- col -->
+            </div><!-- baserow -->
+            
+        </div>
+        <!-- /#page-content-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    <!-- Menu Toggle Script -->
+    <script>
+    $("#menu-toggle").click(function(e) {
+        e.preventDefault();
+        $("#wrapper").toggleClass("toggled");
+    });
+    </script>
+
+</body>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+  </body>
+</html>
