@@ -11,12 +11,10 @@ revision_ciega = Blueprint('revision_ciega',
 
 @revision_ciega.route('/revision_bulto/')
 def revision_bulto():
-	"""
 	id_conn = session.get('id_conn', None)
 	if id_conn is None:
 		return redirect('login')
-	"""
-	id_conn = 0
+
 	contexto = global_modulos.getInfoContexto(id_conn)
 
 	return render_template('revision_bulto.html', contexto=contexto)
