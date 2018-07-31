@@ -3,7 +3,11 @@ from flask_wtf.csrf import CSRFProtect # protector para POST request
 from .modulos import validateUser
 import json
 
-login = Blueprint('login', __name__,template_folder='templates')
+login = Blueprint('login',
+				  __name__,
+				  template_folder='templates',
+				  static_folder='static',
+				  static_url_path='/static/')
 
 #vista de login
 @login.route('/login')
