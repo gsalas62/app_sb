@@ -125,6 +125,10 @@
 			// Buenas prácticas recomendaban retorntar this, ni idea porqué. 
 			return this;
 		};
+		/*
+		Función que cambia los atributos al modal de advertencia (sólo con un botón de cerrar)
+		con el título y mensaje ingresados como argumento y luego lo muestra.
+		*/
 		function setModalAdvertencia(title, mensaje){
 			$("#modalAdvertenciaTitle").text(title);
 			$("#modalAdvertenciaMensaje").text(mensaje);
@@ -162,7 +166,7 @@
         <p id="modalAdvertenciaMensaje">MENSAJE</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
