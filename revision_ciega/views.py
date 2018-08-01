@@ -7,7 +7,7 @@ revision_ciega = Blueprint('revision_ciega',
 						   __name__,
 						   template_folder='templates',
 						   static_folder='static',
-						   static_url_path='/static/')
+						   static_url_path='/%s' % __name__)
 
 @revision_ciega.route('/revision_bulto/')
 def revision_bulto():
@@ -20,7 +20,7 @@ def revision_bulto():
 	return render_template('revision_bulto.html', contexto=contexto)
 
 #vista de revisión de contenido
-@revision_ciega.route('/revision_contenido')
+@revision_ciega.route('/revision_contenido/')
 def revision_contenido():
 	id_conn = session.get('id_conn', None)
 	if id_conn is None:
