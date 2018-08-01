@@ -108,7 +108,7 @@
 					Se pone el focus en el usuario	
 					*/
 					if(obj['cod_status'] == 1){
-						setModalAdvertencia('Error code:' + obj['cod_status'],'Mensaje: ' + obj['msg_status']);
+						setModalAdvertencia('Error code: ' + obj['cod_status'],'Mensaje: ' + obj['msg_status']);
 						$("#loginInput").val('');
 						$("#passwordInput").val('');
 						$("#loginInput").focus();
@@ -119,7 +119,7 @@
 				ejemplo: cuando el servicio está abajo, no hay conexión a internet 
 				*/
 			    error: function(XMLHttpRequest, textStatus, errorThrown) { 
-			        setModalAdvertencia("Status: " + textStatus, "Error: " + errorThrown);
+			        setModalAdvertencia('Status: ' + textStatus, 'Error: ' + errorThrown);
 			    }
 			});
 			// Buenas prácticas recomendaban retorntar this, ni idea porqué. 
