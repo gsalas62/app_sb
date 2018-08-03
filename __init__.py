@@ -19,10 +19,12 @@ app.config.from_object(DevelopmentConfig)
 # se importan los views de los blueprints
 from login.views import login
 from menu.views import menu
-from revision_ciega.views import revision_ciega
+from revision_contenido.views import revision_contenido
+from revision_bultos.views import revision_bultos
 
 # se agregan los blueprints a nuestra app
 app.register_blueprint(login)
 app.register_blueprint(menu)
-app.register_blueprint(revision_ciega)
+app.register_blueprint(revision_contenido)
+app.register_blueprint(revision_bultos)
 
