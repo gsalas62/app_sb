@@ -7,6 +7,7 @@ la cual es ingresada en uque se ingresa a una cookie
 """
 
 def validateUser(user,password):
+
 	print('alguien quiere validar!')
 	url = "http://192.168.1.201:7106/soa-infra/services/default/Serv_RegistrarLogin/bpelprocess1_client_ep?WSDL"
 	headers = {'content-type': 'text/xml'}
@@ -30,5 +31,5 @@ def validateUser(user,password):
 	myDict['cod_status'] = soup.find('cod_status').get_text()
 	myDict['msg_status'] = soup.find('msg_status').get_text()
 	myDict['id_conn'] = soup.find('id_conn').get_text()
-
+	
 	return myDict

@@ -5,12 +5,13 @@
 {% endblock %}
 
 {% block screen_name %}
-<h2 style="color: #1a8dff;">Login</h2>
+	<h2 style="color: #1a8dff;">Login</h2>
 {% endblock %}
 
 {% block header %}
 	<script type="text/javascript">
 		$(function(){
+			$('#modalAdvertencia').modal({ show: false})
 			// Cuando se carga la página se pone como focus el input del login
 			$("#loginInput").focus();
 
@@ -30,7 +31,7 @@
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				 
 				// Si es 'enter' y el largo es > 0 llama la función validarLogin()
-				if (keycode == 13 && $(this).val().length > 0) {
+				if (keycode == 13 && $(this).val().length > 0 ) {
 					validarLogin();
 				}
 			});
@@ -49,10 +50,16 @@
 			/* TOKEN DE SEGURIDAD */
 			var csrf_token = "{{ csrf_token() }}";
 		    $.ajaxSetup({
+				/*
+				ANTES de mandar el load del ajax se define el token, se pone el loader del gif y se esconde la pantalla principal 
+				para que los wns no hagan nada (como apretar hartas veces el botón ingresar / enter ).				
+				*/
 		        beforeSend: function(xhr, settings) {
 		            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
 		                xhr.setRequestHeader("X-CSRFToken", csrf_token);
 		            }
+		            $("#loader").show();
+					$("#fieldscol").hide();
 		        }
 		    });
 		    /* Llamado a ajax */
@@ -62,9 +69,7 @@
 				Se define tipo 'POST'
 				Se define header 'application/json'
 				Se define url
-					OJO: con los blueprints ya basta con el nombre de la vista para hacer uso de url_for 
-					(no basta con url_for('validar_login')), ahora hay que definir a que blueprint le corresponde esa url (independiente de que sea al mismo blueprint),
-					poniendolo de la forma blueprint.vista, en este caso validar_login le corresponde al blueprint 'login', por se pone como argumento 'login.validar_login'. 
+					OJO: con los blueprints ya que se necesita el nombre de la vista para hacer uso de url_for, (no basta con url_for('validar_login')), ahora hay que definir a que blueprint le corresponde esa vista (independiente de que sea al mismo blueprint), poniendolo de la forma blueprint.vista, en este caso validar_login le corresponde al blueprint 'login', por se pone como argumento 'login.validar_login'. 
 				*/
 				data: JSON.stringify({ 
 							'user' : user, 
@@ -73,6 +78,11 @@
 				type: 'POST',
 				url: "{{ url_for('login.validar_login') }}",
 				contentType: 'application/json',
+				complete: function(){
+					$("#loader").hide();
+					$("#fieldscol").show();
+					$("#loginInput").focus();
+				},
 				/* Si es que json devuelve algo */
 			    success: function(result) {
 					console.log(result['data']);
@@ -98,7 +108,7 @@
 					Se pone el focus en el usuario	
 					*/
 					if(obj['cod_status'] == 1){
-						alert(obj['msg_status']);
+						setModalAdvertencia('Error code: ' + obj['cod_status'],'Mensaje: ' + obj['msg_status']);
 						$("#loginInput").val('');
 						$("#passwordInput").val('');
 						$("#loginInput").focus();
@@ -109,12 +119,20 @@
 				ejemplo: cuando el servicio está abajo, no hay conexión a internet 
 				*/
 			    error: function(XMLHttpRequest, textStatus, errorThrown) { 
-			        alert("Status: " + textStatus);
-			        alert("Error: " + errorThrown);
-			    }       
+			        setModalAdvertencia('Status: ' + textStatus, 'Error: ' + errorThrown);
+			    }
 			});
 			// Buenas prácticas recomendaban retorntar this, ni idea porqué. 
 			return this;
+		};
+		/*
+		Función que cambia los atributos al modal de advertencia (sólo con un botón de cerrar)
+		con el título y mensaje ingresados como argumento y luego lo muestra.
+		*/
+		function setModalAdvertencia(title, mensaje){
+			$("#modalAdvertenciaTitle").text(title);
+			$("#modalAdvertenciaMensaje").text(mensaje);
+			$("#modalAdvertencia").modal('show');
 		};
 	</script>
 	<style type="text/css">
@@ -127,7 +145,36 @@
 {% endblock %}
 
 {% block field_container %}
+<!-- div del gif con el loader, parte hidden -->
+<div id="loader" style="display: none;">
+	<center>
+		<img src="{{url_for('static',filename='img/ajax-loader.gif')}}">
+	</center>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalAdvertencia" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalAdvertenciaTitle">TITULO</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="modalAdvertenciaMensaje">MENSAJE</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- div central -->
 <div class="d-flex align-items-center justify-content-center h-100">
+    <!-- columna principal que se esconde mientras se espera respuesta del ajax -->
     <div class="col" id="fieldscol">
 		<meta name="csrf-token" content="{{ csrf_token() }}">
 	    <div class="form-group">
