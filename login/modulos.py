@@ -7,11 +7,8 @@ la cual es ingresada en uque se ingresa a una cookie
 """
 
 def validateUser(user,password):
-
-	print('alguien quiere validar!')
 	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_RegistrarLogin/bp_registrarlogin_client_ep?WSDL"
 	headers = {'content-type': 'text/xml'}
-	
 	body = 	"""<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
 					<soap:Body>
 							<ns1:ParEntrada xmlns:ns1="http://www.Sqm_RegistrarLogin.org">
