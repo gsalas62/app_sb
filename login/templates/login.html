@@ -13,40 +13,45 @@
 		$(function(){
 			$('#modalAdvertencia').modal({ show: false})
 			// Cuando se carga la página se pone como focus el input del login
-			$("#loginInput").focus();
+			$("#InputLogin").focus();
 
-			$("#loginInput").keypress(function(event) {
+			$("#InputLogin").keypress(function(event) {
 				// Detecta además del keycode de un teclado físico, el keycode del teclado de android
 				var keycode = (event.keyCode ? event.keyCode : event.which);
-				 
 				// Si es 'enter' y el largo es > 0 pasa el focus al input del password (equivalente al tab)
 				if (keycode == 13 && $(this).val().length > 0) {
-					$("#passwordInput").focus();
+					$("#InputPassword").focus();
 				}
 			});
 
-			$("#passwordInput").keypress(function(event){
-
+			$("#InputPassword").keypress(function(event){
 				// Detecta además del keycode de un teclado físico, el keycode del teclado de android
 				var keycode = (event.keyCode ? event.keyCode : event.which);
-				 
 				// Si es 'enter' y el largo es > 0 llama la función validarLogin()
 				if (keycode == 13 && $(this).val().length > 0 ) {
+					$("#IngresarLogin").focus();
+				}
+			});
+			
+			$("#IngresarLogin").bind('click', function(event){
+				if ($("#InputLogin").val().length <= 0){
+					setModalAdvertencia("Error Al Validar Datos:","Mensaje: Usuario NO Puede Estar Nulo");
+					$("#InputLogin").focus();
+				}else if ($("#InputPassword").val().length <= 0){
+					setModalAdvertencia("Error Al Validar Datos:","Mensaje: Contraseña NO Puede Estar Nula");
+					$("#InputPassword").focus();
+				}else{
 					validarLogin();
 				}
 			});
-
-			$("#ingresarId").bind('click', function(event){
-				validarLogin();
-			});
 		});
 		/*
-		Función que toma los valores de los input '#loginInput' y '#passwordInput' y los envía
+		Función que toma los valores de los input '#InputLogin' y '#InputPassword' y los envía
 		usando ajax al path /validar_login, donde se hará uso del servicio para validar o no las credenciales
 		*/ 
 		function validarLogin(){
-			user = $("#loginInput").val();
-			password = $("#passwordInput").val();
+			user = $("#InputLogin").val();
+			password = $("#InputPassword").val();
 			/* TOKEN DE SEGURIDAD */
 			var csrf_token = "{{ csrf_token() }}";
 		    $.ajaxSetup({
@@ -81,10 +86,10 @@
 				complete: function(){
 					$("#loader").hide();
 					$("#fieldscol").show();
-					$("#loginInput").focus();
+					$("#InputLogin").focus();
 				},
 				/* Si es que json devuelve algo */
-			    success: function(result) {
+				success: function(result) {
 					console.log(result['data']);
 					/* Se parsea el result que llegó desde la llamada del ajax */
 					var obj = $.parseJSON(result['data']);
@@ -108,19 +113,19 @@
 					Se pone el focus en el usuario	
 					*/
 					if(obj['cod_status'] == 1){
-						setModalAdvertencia('Error code: ' + obj['cod_status'],'Mensaje: ' + obj['msg_status']);
-						$("#loginInput").val('');
-						$("#passwordInput").val('');
-						$("#loginInput").focus();
+						setModalAdvertencia("Error Al Validar Datos:","Mensaje: "+obj['msg_status']);
+						$("#InputLogin").val('');
+						$("#InputPassword").val('');
+						$("#InputLogin").focus();
 					}
-			    },
-			    /*
-			    Error cuando falla el ajax, ocurre cuando el servicio no devuelve nada.
+				},
+				/*
+				Error cuando falla el ajax, ocurre cuando el servicio no devuelve nada.
 				ejemplo: cuando el servicio está abajo, no hay conexión a internet 
 				*/
-			    error: function(XMLHttpRequest, textStatus, errorThrown) { 
-			        setModalAdvertencia('Status: ' + textStatus, 'Error: ' + errorThrown);
-			    }
+				error: function(XMLHttpRequest, textStatus, errorThrown) { 
+					setModalAdvertencia("Status: "+textStatus,"Error: "+errorThrown);
+				}
 			});
 			// Buenas prácticas recomendaban retorntar this, ni idea porqué. 
 			return this;
@@ -179,14 +184,14 @@
 		<meta name="csrf-token" content="{{ csrf_token() }}">
 	    <div class="form-group">
 	        <label for="logInput">Usuario:</label>
-	        <input type="text" class="form-control" id="loginInput" required autofocus>
+	        <input type="text" class="form-control" id="InputLogin" autofocus>
 	    </div>
 	    <div class="form-group">
             <label for="passInput">Contraseña:</label>
-            <input type="password" class="form-control" id="passwordInput" required>
+            <input type="password" class="form-control" id="InputPassword">
         </div>
 	    <div class="d-flex align-items-center justify-content-center">
-	        <button class="btn btn-default align-self-center p-2" type="" id="ingresarId">Ingresar</button>
+	        <button class="btn btn-default align-self-center p-2" type="" id="IngresarLogin">Ingresar</button>
         </div>
     </div>
 </div>

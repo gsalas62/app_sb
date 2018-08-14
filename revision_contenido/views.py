@@ -4,10 +4,10 @@ from app_sb import modulos as global_modulos # modulos hechos por nosotros (serv
 #import json # para manejar json's
 
 revision_contenido = Blueprint('revision_contenido',
-						   __name__,
-						   template_folder='templates',
-						   static_folder='static',
-						   static_url_path='/%s' % __name__)
+							   __name__,
+							   template_folder='templates',
+							   static_folder='static',
+							   static_url_path='/%s' % __name__)
 
 #vista de revisión de contenido
 @revision_contenido.route('/revision_contenido/')
@@ -19,3 +19,4 @@ def _revision_contenido():
 	contexto = global_modulos.getInfoContexto(id_conn)
 	
 	return render_template('revision_contenido.html', contexto=contexto) 
+

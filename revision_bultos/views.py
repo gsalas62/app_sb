@@ -19,3 +19,18 @@ def _revision_bultos():
 	contexto = global_modulos.getInfoContexto(id_conn)
 
 	return render_template('revision_bultos.html', contexto=contexto)
+
+#servicio que llama al registrar salida
+@revision_bultos.route('/registrarsalida', methods=['GET','POST'])
+def registrar_salida():
+	id_conn = session.get('id_conn', None)
+	if id_conn is None:
+		return redirect('login')
+	
+	nro_salida = request.args.get('nro_salida', 0, type=int)
+	rev_todo = request.args.get('rev_todo', 0, type=int)
+	fch_llegada = '2018-08-13T12:20:32'
+	glosa = 'Algún Commentario Serv'
+	
+	cod_status, msg_status = global_modulos.RegistrarSalida(id_conn, nro_salida, rev_todo, fch_llegada, glosa)
+	return jsonify(cod_status=cod_status,  msg_status=msg_status)
