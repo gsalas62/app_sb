@@ -30,7 +30,7 @@ def registrar_salida():
 	nro_salida = request.args.get('nro_salida', 0, type=int)
 	rev_todo = request.args.get('rev_todo', 0, type=int)
 	fch_llegada = '2018-08-13T12:20:32'
-	glosa = 'Algún Commentario Serv'
+	glosa = 'Algun Commentario Serv'
 	
 	cod_status, msg_status = global_modulos.RegistrarSalida(id_conn, nro_salida, rev_todo, fch_llegada, glosa)
 	return jsonify(cod_status=cod_status,  msg_status=msg_status)

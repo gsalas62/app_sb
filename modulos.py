@@ -50,8 +50,15 @@ def RegistrarSalida(id_conn, nro_salida, rev_todo, fch_llegada, glosa):
 	response = requests.post(url,data=body,headers=headers)
 	soup = BeautifulSoup(str(response.content), "html.parser")
 	
-	print(soup)
-	cod_status = soup.find('cod_status').get_text()
-	msg_status = soup.find('msg_status').get_text()
+	# Este código y mensaje por defecto
+	# Si es que no pilla cod_status significa que el servicio no funcionó bien y le llegó cualquier tontera
+	cod_status = 3
+	msg_status = 'No se encontró COD_STATUS, error en el servicio'
+
+	# Esto es para verificar que efectivamente le llegó un cod_status
+	res = soup.find_all('cod_status')
+	if len(res) > 0:
+		cod_status = soup.find('cod_status').get_text()
+		msg_status = soup.find('msg_status').get_text()
 	
 	return cod_status, msg_status
