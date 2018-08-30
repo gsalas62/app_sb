@@ -1,4 +1,1978 @@
-gshadikk
-=======
-dgdgdfgdfg
->>>>>>> 3bc4c7b86361af450c6edd3e91736515f57084a2
+create or replace PACKAGE BODY RECEP_CIEGA_MOVIL_PKG IS
+    Procedure Diff_Inicializa is
+    begin
+        v_prods_sob.delete;
+        v_prods_fal.delete;
+    end Diff_Inicializa;
+    Procedure Diff_SetLoop is
+    begin
+        indice := null;
+    end Diff_SetLoop;
+    Procedure Diff_Registrar_Item(p_item number, p_tipo varchar2, p_cantidad number, p_error out varchar2) IS
+        EXC_SALIR   exception;
+    begin
+        if p_tipo = 'SOB' then
+            if v_prods_fal.exists(p_item) then
+                p_error := 'Producto Esta Registrado Como Faltante';
+                raise EXC_SALIR;
+            end if;
+            
+            if not v_prods_sob.exists(p_item) then
+                v_prods_sob(p_item).item_id := p_item;
+                v_prods_sob(p_item).cantidad := nvl(p_cantidad, 0);
+            else
+                v_prods_sob(p_item).cantidad := v_prods_sob(p_item).cantidad + nvl(p_cantidad, 0);
+            end if;
+        else
+            if v_prods_sob.exists(p_item) then
+                p_error := 'Producto Esta Registrado Como Sobrante';
+                raise EXC_SALIR;
+            end if;
+            
+            if not v_prods_fal.exists(p_item) then
+                v_prods_fal(p_item).item_id := p_item;
+                v_prods_fal(p_item).cantidad := nvl(p_cantidad, 0);
+            else
+                v_prods_fal(p_item).cantidad := v_prods_fal(p_item).cantidad + nvl(p_cantidad, 0);
+            end if;
+        end if;
+    end Diff_Registrar_Item;
+    Function Diff_NextItem(p_tipo_diff varchar2, p_item out number, p_cantidad out number) return boolean is
+        v_arr   v_tarr;
+    begin
+        if p_tipo_diff = 'SOB' then
+            v_arr := v_prods_sob;
+        else
+            v_arr := v_prods_fal;
+        end if;
+        
+        if indice is null then
+            indice := v_arr.first;
+        else
+            indice := v_arr.next(indice);
+        end if;
+        
+        if indice is null then
+            return(FALSE);
+        end if;
+        
+        if v_arr.exists(indice) then
+            p_item := v_arr(indice).item_id;
+            p_cantidad := v_arr(indice).cantidad;
+            return(TRUE);
+        end if;
+        
+        return(FALSE);
+    end Diff_NextItem;
+    Procedure Procesar_Faltantes(   p_nro_bandeja number, p_local number, p_local_dt number, p_org_inv number, 
+                                    p_org_loc number, p_org_usr number, p_usuario varchar2,  p_error out varchar2) IS
+        vl_item_id  number;
+        vl_cantidad number;
+        
+        EXC_SALIR   exception;
+        
+        trx transacciones_documento%rowtype;
+        
+        cursor c1 is
+            select	pdd.organization_id, codigo rp_codigo, pdd.lo_codigo, ban.estado,
+                    ban.fecha_recepcion, ban.usuario_recepcion, bdg_codigo, zona,
+                    lo_codigo_recepcion, estado_revision_local, numero salida_origen
+            from    bandejas ban, pedidos_de_despacho pdd
+            where   ban.rp_codigo = pdd.codigo
+                and ban.codigo_bandeja = p_nro_bandeja;
+        rc1 c1%rowtype;
+    BEGIN
+        open c1;
+        fetch c1 into rc1;
+        if c1%notfound then
+            p_error := 'Bandeja NO Existe';
+            close c1;
+            return;
+        end if;
+        close c1;
+        
+        BG_CATALOGO_TRX_PKG.SetOrigen(BG_CATALOGO_TRX_PKG.getTransactionCode('TRASP_DISP_DIF'), null, to_char(p_local), null, null, p_error);
+        if p_error is not null then return; end if;
+        
+        BG_CATALOGO_TRX_PKG.SetDestino(BG_CATALOGO_TRX_PKG.getTransactionCode('TRASP_DISP_DIF'), null, to_char(p_local), null, null, p_error);
+        if p_error is not null then return; end if;
+        
+        trx.organization_id := p_org_usr;
+    
+        --Origen
+        trx.org_id_o := BG_CATALOGO_TRX_PKG.GetOrg_O;
+        trx.bo_codigo_o := BG_CATALOGO_TRX_PKG.GetSubInv_O;
+        trx.localizador_o := BG_CATALOGO_TRX_PKG.GetLocalizador_O;
+        trx.codigo_transaccion_o := BG_CATALOGO_TRX_PKG.GetTransacAPPS_O;
+            
+        --Destino
+        trx.org_id_d := BG_CATALOGO_TRX_PKG.GetOrg_D;
+        trx.bo_codigo_d := BG_CATALOGO_TRX_PKG.GetSubInv_D;
+        trx.localizador_d := BG_CATALOGO_TRX_PKG.GetLocalizador_D;
+        trx.codigo_transaccion_d := BG_CATALOGO_TRX_PKG.GetTransacAPPS_D;
+    
+        Diff_SetLoop;
+        Loop
+            if not Diff_NextItem('FAL', vl_item_id, vl_cantidad) Then
+                exit;
+            end if;
+            
+            trx.dc_numero_interno := p_nro_bandeja;
+            BG_TRANSACCIONES_PKG.Hacer_Trans_Inventario(p_org_loc, vl_item_id, abs(vl_cantidad), trx,
+                                                        'REV. BODEGA - ZONA. ITEMES FALTANTES: '||rc1.bdg_codigo||'-'||rc1.zona,
+                                                        p_usuario, BG_CATALOGO_TRX_PKG.getTransactionCode('TRASP_DISP_DIF'), p_error);
+            if p_error is not null then raise EXC_SALIR; end if;
+            
+            begin
+                insert into diferencias_item_recepcion
+                (organization_id, se_numero, ba_codigo_bandeja, lo_codigo_rec, org_id_inv, inventory_item_id, sentido,
+                rp_codigo_original, lo_codigo_original, estado_bandeja, fecha_estado_bandeja, usuario_estado, cantidad)
+                values
+                (rc1.organization_id, rc1.salida_origen, p_nro_bandeja, p_local_dt, p_org_inv, vl_item_id, -1,
+                rc1.rp_codigo, p_local_dt, rc1.estado, rc1.fecha_recepcion, rc1.usuario_recepcion, vl_cantidad);
+            exception when others then
+                p_error := 'NO Se Pudieron Insertar Las Diferencias de Los Faltantes';
+                raise EXC_SALIR;
+            end;
+        end loop;
+    exception when EXC_SALIR then ROLLBACK;
+    when others then
+        p_error:= substr(sqlerrm,1,240);
+        ROLLBACK;
+    end Procesar_Faltantes;
+    Procedure Procesar_Sobrantes(   p_nro_bandeja number, p_local number, p_local_dt number, 
+                                    p_org_inv number, p_org_usr number, p_error out varchar2) IS
+        vl_item_id  number;
+        vl_cantidad number;
+        
+        EXC_SALIR   exception;
+        
+        trx transacciones_documento%rowtype;
+        
+        cursor c1 is
+            select	pdd.organization_id, codigo rp_codigo, pdd.lo_codigo, ban.estado,
+                    ban.fecha_recepcion, ban.usuario_recepcion, bdg_codigo, zona,
+                    lo_codigo_recepcion, estado_revision_local, numero salida_origen
+            from    bandejas ban, pedidos_de_despacho pdd
+            where   ban.rp_codigo = pdd.codigo
+                and ban.codigo_bandeja = p_nro_bandeja;
+        rc1 c1%rowtype;
+    BEGIN
+        open c1;
+        fetch c1 into rc1;
+        if c1%notfound then
+            p_error := 'Bandeja NO Existe';
+            close c1;
+            return;
+        end if;
+        close c1;
+        
+        BG_CATALOGO_TRX_PKG.SetOrigen(BG_CATALOGO_TRX_PKG.getTransactionCode('TRASP_DISP_DIF'), null, to_char(p_local), null, null, p_error);
+        if p_error is not null then return; end if;
+        
+        BG_CATALOGO_TRX_PKG.SetDestino(BG_CATALOGO_TRX_PKG.getTransactionCode('TRASP_DISP_DIF'), null, to_char(p_local), null, null, p_error);
+        if p_error is not null then return; end if;   
+        
+        trx.organization_id := p_org_usr;
+        
+        --Origen
+        trx.org_id_o := BG_CATALOGO_TRX_PKG.GetOrg_O;
+        trx.bo_codigo_o := BG_CATALOGO_TRX_PKG.GetSubInv_O;
+        trx.localizador_o := BG_CATALOGO_TRX_PKG.GetLocalizador_O;
+        trx.codigo_transaccion_o := BG_CATALOGO_TRX_PKG.GetTransacAPPS_O;
+            
+        --Destino
+        trx.org_id_d := BG_CATALOGO_TRX_PKG.GetOrg_D;
+        trx.bo_codigo_d := BG_CATALOGO_TRX_PKG.GetSubInv_D;
+        trx.localizador_d := BG_CATALOGO_TRX_PKG.GetLocalizador_D;
+        trx.codigo_transaccion_d := BG_CATALOGO_TRX_PKG.GetTransacAPPS_D;
+        
+        Diff_SetLoop;
+        Loop
+            if not Diff_NextItem('SOB', vl_item_id, vl_cantidad) Then
+                exit;
+            end if;
+            
+            begin
+                insert into diferencias_item_recepcion
+                (organization_id, se_numero, ba_codigo_bandeja, lo_codigo_rec, org_id_inv, inventory_item_id, sentido,
+                rp_codigo_original, lo_codigo_original, estado_bandeja, fecha_estado_bandeja, usuario_estado, cantidad)
+                values
+                (rc1.organization_id, rc1.salida_origen, p_nro_bandeja, p_local_dt, p_org_inv, vl_item_id, 1,
+                rc1.rp_codigo, p_local_dt, rc1.estado, rc1.fecha_recepcion, rc1.usuario_recepcion, vl_cantidad);
+            exception when others then
+                p_error := 'NO Se Pudieron Insertar Las Diferencias de Los Sobrantes';
+                raise EXC_SALIR;
+            end;
+        end loop;
+    exception when EXC_SALIR then ROLLBACK;
+    when others then
+        p_error:= substr(sqlerrm,1,240);
+        ROLLBACK;
+    end Procesar_Sobrantes;
+    Procedure Procesar_Merma(p_local number, p_org_loc number, p_usuario varchar2, p_error out varchar2) IS
+        EXC_SALIR   exception;
+        
+        trx   transacciones_documento%rowtype;
+        
+        cursor c1 is
+            select  inventory_item_id, nvl(sum(cantidad_recep), 0) merma
+            from    JSYB_RCM_DETALLE_REVISION
+            /****where   condicion_producto = 'MERTRAN'*/
+            group by inventory_item_id;
+    BEGIN
+        BG_CATALOGO_TRX_PKG.SetOrigen(1090, null, to_char(p_local), null, null, p_error);
+        if p_error is not null then return; end if;
+        
+        BG_CATALOGO_TRX_PKG.SetDestino(1090, null, to_char(p_local), null, null, p_error);
+        if p_error is not null then return; end if;
+        
+        trx.organization_id := p_org_loc;
+        
+        --Origen
+        trx.org_id_o := BG_CATALOGO_TRX_PKG.GetOrg_O;
+        trx.bo_codigo_o := BG_CATALOGO_TRX_PKG.GetSubInv_O;
+        trx.localizador_o := BG_CATALOGO_TRX_PKG.GetLocalizador_O;
+        trx.codigo_transaccion_o := BG_CATALOGO_TRX_PKG.GetTransacAPPS_O;
+            
+        --Destino
+        trx.org_id_d := BG_CATALOGO_TRX_PKG.GetOrg_D;
+        trx.bo_codigo_d := BG_CATALOGO_TRX_PKG.GetSubInv_D;
+        trx.localizador_d := BG_CATALOGO_TRX_PKG.GetLocalizador_D;
+        trx.codigo_transaccion_d := BG_CATALOGO_TRX_PKG.GetTransacAPPS_D;
+    
+        for i in c1 loop
+            BG_TRANSACCIONES_PKG.Hacer_Trans_Inventario(p_org_loc, i.inventory_item_id, abs(i.merma), trx,
+                                                        'TRASPASA MERMA TRANSP BODEGA a CANJE',
+                                                        p_usuario, 1090, p_error);
+            if p_error is not null then raise EXC_SALIR; end if;
+        end loop;
+    exception when EXC_SALIR then ROLLBACK;
+    when others then
+        p_error:= substr(sqlerrm,1,240);
+        ROLLBACK;
+    end Procesar_Merma;
+    
+    
+    Function Get_PMP(p_empresa number, p_org_id number, p_item_id number) return number IS
+        vl_pmp number;
+    begin
+        select  precio_pmp into vl_pmp
+        from    JSYB_BG_ADD_INFO_ITEM_TL
+        where   codigo_empresa = p_empresa
+            and organization_id = p_org_id
+            and inventory_item_id = p_item_id;
+        return(vl_pmp);
+    exception when others then return(null);
+    end Get_PMP;
+    
+    Function Get_Barra_Gs1(p_cod_ingresado varchar2) return varchar2 IS
+        vl_vto_lote date;
+        vl_item_id  number;
+        vl_cbarra   varchar2(100);
+        vl_error    varchar2(250);
+        vl_lote     varchar2(100);
+    begin
+        BG_ADM_LOTES_PKG.Decodifica_Gs1(p_cod_ingresado, vl_cbarra, vl_lote, vl_vto_lote, vl_item_id, vl_error);
+        if vl_error is not null then
+            vl_cbarra := null;
+        end if;
+        return(vl_cbarra);
+    exception when others then return(null);
+    end Get_Barra_Gs1;
+    
+    Procedure RegistraLogin(p_user varchar2, p_pass varchar2, p_id_conn out number,
+                            cod_status out number, msg_status out varchar2) IS
+        vl_idconn   number;
+        vl_local    number;
+        vl_empresa  number;
+        vl_userid   number;
+        vl_estatus  number;
+        
+        vl_dummy    number;
+        EXC_SALIR   exception;
+    begin
+        cod_status := 0;
+        msg_status := null;
+        
+        JSYB_FND_SEGURIDAD.Validar_Conexion_Usuario(p_user, p_pass, vl_userid, vl_estatus, msg_status);
+        if vl_estatus = 0 then
+            begin
+                select  codigo_empresa, local_asignado
+                into    vl_empresa, vl_local
+                from    JSYB_FND_USUARIO_EMPRESAS
+                where   user_id = vl_userid;
+                
+                if vl_local is not null then
+                    begin
+                        select  1 into vl_dummy
+                        from    SU_SUCURSAL_TL
+                        where   su_estado != 2
+                            and su_suc_id = vl_local
+                            and su_empresa_id = vl_empresa;
+                        
+                        begin
+                            select  JSYB_RCM_CONEXION_SEQ.nextval
+                            into    vl_idconn from dual;
+                            
+                            begin
+                                insert into JSYB_RCM_CONEXIONES (id_conn, fecha_conn, usuario, empresa, local)
+                                values (vl_idconn, sysdate, p_user, vl_empresa, vl_local);
+                                
+                                p_id_conn := vl_idconn;
+                                msg_status := 'Conexion Correcta';
+                            exception when others then
+                                cod_status := 1;
+                                msg_status := 'NO Se Pudo Agregar la Conexion a la Tabla';
+                                raise EXC_SALIR;
+                            end;
+                        exception when no_data_found then
+                            cod_status := 1;
+                            msg_status := 'NO Se Pudo Asignar Un ID de Conexion';
+                            raise EXC_SALIR;
+                        end;
+                    exception when no_data_found then
+                        cod_status := 1;
+                        msg_status := 'Local del Usuario NO Puede Ser "Cerrado"';
+                        raise EXC_SALIR;
+                    end;
+                else
+                    cod_status := 1;
+                    msg_status := 'Usuario Debe Tener Asignado Al Menos Un Local';
+                    raise EXC_SALIR;
+                end if;
+            exception when no_data_found then
+                cod_status := 1;
+                msg_status := 'Usuario Debe Tener Asignado Al Menos Una Empresa';
+                raise EXC_SALIR;
+            when too_many_rows then
+                cod_status := 1;
+                msg_status := 'Usuario Tiene Asignado Mas de Una Empresa';
+                raise EXC_SALIR;
+            end;
+        elsif vl_estatus in (5,6) then
+            cod_status := 1;
+            msg_status := 'Debe Cambiar la Contrasena. Vaya al Antiguo SCM Para Realizar Esta Accion';
+            raise EXC_SALIR;
+        elsif vl_estatus = 8 then
+            cod_status := 1;
+            raise EXC_SALIR;
+        else
+            cod_status := 1;
+            msg_status := 'NO Se Puede Conectar al SCM: '||msg_status;
+            raise EXC_SALIR;
+        end if;
+    exception when EXC_SALIR then ROLLBACK;
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end RegistraLogin;
+    
+    Procedure GetInfoContexto(  p_id_conn number, p_empresa out number, p_local out number,
+                                p_user out varchar2, cod_status out number, msg_status out varchar2) IS
+    begin
+        cod_status := 0;
+        msg_status := null;
+        
+        select  empresa, local, usuario
+        into    p_empresa, p_local, p_user
+        from    JSYB_RCM_CONEXIONES
+        where   id_conn = p_id_conn;
+        
+        msg_status := 'Conexion Correcta';
+    exception when no_data_found then
+        cod_status := 1;
+        msg_status := 'Conexion NO Existe';
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+    end GetInfoContexto;
+    
+    Procedure RegistraRevision( p_salida number, p_empresa number, p_local number, p_org_cd number, 
+                                p_org_inv number, p_rev_todo number, p_error out varchar2) IS
+        vl_formato      varchar2(240);
+        vl_nro_salida   number;
+        vl_rev_todo     varchar2(1);
+        vl_costo_bulto  number;
+        vl_costo_prod   number;
+        vl_por_bulto    number;
+        vl_orden_por    varchar2(1);
+        vl_tot_rev      number;
+        vl_tot_rev2     number;
+        vl_tot_ban      number;
+        vl_por_resto    number;
+        vl_resto_ban    number;
+        
+        cursor c0(pp_costo_bulto number, pp_costo_prod number, pp_por_bulto number, pp_orden_por varchar2) is
+            select  numero_salida, ind_revisar_todos, 
+                    nvl(costo_bulto, pp_costo_bulto), nvl(costo_producto, pp_costo_prod),
+                    nvl(porcentaje_bultos, pp_por_bulto), nvl(orden_porcentaje, pp_orden_por)
+            from    JSYB_RCM_PARAMETROS_LOCALES
+            where   lo_codigo = p_local
+                and codigo_empresa = p_empresa
+                and organization_id = p_org_cd
+                and decode(numero_salida, 0, p_salida, numero_salida) = p_salida
+            order by numero_salida desc;
+        
+        cursor c1 is
+            select  codigo_bandeja
+            from    BANDEJAS ban, JSYB_RCM_PAR_LOCALES_X_RUBRO lxr
+            where   lxr.lo_codigo = p_local
+                and lxr.organization_id = p_org_cd
+                and lxr.codigo_empresa = p_empresa
+                and lxr.numero_salida = p_salida
+                and ind_revision_rcm = 'N'
+                and lxr.lo_codigo = ban.lo_codigo
+                and lxr.numero_salida = ban.numero
+                and lxr.bdg_codigo = ban.bdg_codigo
+                and lxr.organization_id = ban.organization_id;
+        
+        cursor c2(pp_formato varchar2) is
+            select  distinct ban.codigo_bandeja
+            from    BANDEJAS ban,
+                    DETALLE_X_BANDEJAS det,
+                    JSYB_RCM_ZONAS_WMS zon,
+                    MTL_SYSTEM_ITEMS_B mtl,
+                    JSYB_RCM_PAR_GEN_X_ZONA_WMS gxz
+            where   ban.numero = p_salida
+                and ban.lo_codigo = p_local
+                and gxz.zona_wms = zon.area
+                and ban.ind_revision_rcm = 'N'
+                and zon.segment1 = mtl.segment1
+                and gxz.formato_local = pp_formato
+                and gxz.codigo_empresa = p_empresa
+                and det.organization_id = p_org_cd
+                and mtl.organization_id = p_org_inv
+                and ban.codigo_bandeja = det.codigo_bandeja
+                and mtl.inventory_item_id = det.inventory_item_id;
+        
+        cursor c3(pp_costo_prod number) is
+            select  distinct enc.codigo_bandeja
+            from    BANDEJAS enc, DETALLE_X_BANDEJAS det
+            where   numero = p_salida
+                and lo_codigo = p_local
+                and enc.organization_id = p_org_cd
+                and enc.codigo_bandeja = det.codigo_bandeja
+                and enc.bdg_codigo not in ( select codigo from BODEGA_PICKING
+                                            where   tipo = 'O' or codigo = 'Con')
+                and Get_PMP(p_empresa, p_org_inv, inventory_item_id) >= pp_costo_prod;
+        
+        cursor c4(pp_costo_bulto number) is
+            select  codigo_bandeja  from    BANDEJAS enc
+            where   numero = p_salida
+                and lo_codigo = p_local
+                and organization_id = p_org_cd
+                and ind_revision_rcm = 'N'
+                and bdg_codigo not in ( select  codigo from BODEGA_PICKING
+                                        where   tipo = 'O' or codigo = 'Con')
+                and (select sum(Get_PMP(p_empresa, p_org_inv, inventory_item_id))
+                    from    detalle_x_bandejas det
+                    where   enc.codigo_bandeja = det.codigo_bandeja) >= pp_costo_bulto;
+        
+        cursor c5(pp_resto_ban number) is
+            select  codigo_bandeja from (
+                select  codigo_bandeja
+                from    BANDEJAS
+                where   numero = p_salida
+                            and lo_codigo = p_local
+                            and organization_id = p_org_cd
+                            and ind_revision_rcm = 'N'
+                            and bdg_codigo not in ( select codigo from BODEGA_PICKING
+                                                    where   tipo = 'O' or codigo = 'Con')
+                order by 1 asc)
+            where rownum <= pp_resto_ban;
+        
+        cursor c6(pp_resto_ban number) is
+            select  codigo_bandeja from (
+                select  codigo_bandeja
+                from    BANDEJAS
+                where   numero = p_salida
+                            and lo_codigo = p_local
+                            and organization_id = p_org_cd
+                            and ind_revision_rcm = 'N'
+                            and bdg_codigo not in ( select codigo from BODEGA_PICKING
+                                                    where   tipo = 'O' or codigo = 'Con')
+                order by 1 desc)
+            where rownum <= pp_resto_ban;
+            
+        cursor c7(pp_resto_ban number) is
+            select  codigo_bandeja from (
+                select  codigo_bandeja
+                from    BANDEJAS
+                where   numero = p_salida
+                            and lo_codigo = p_local
+                            and organization_id = p_org_cd
+                            and ind_revision_rcm = 'N'
+                            and bdg_codigo not in ( select codigo from BODEGA_PICKING
+                                                    where   tipo = 'O' or codigo = 'Con')
+                order by dbms_random.value)
+            where rownum <= pp_resto_ban;
+        
+        EXC_SALIR exception;
+    begin
+        select  count(*) into vl_tot_ban
+        from    BANDEJAS
+        where   numero = p_salida
+            and lo_codigo = p_local
+            and organization_id = p_org_cd;
+        
+        if vl_tot_ban = 0 then
+            p_error := 'Salida NO Tiene Bandejas';
+            raise EXC_SALIR;
+        end if;
+        
+        --if p_rev_todo = 1 then selecciona todas las bandejas: ind_revision_rcm = 'S'
+        if p_rev_todo = 1 then
+            begin
+                update  BANDEJAS
+                    set ind_revision_rcm = 'S'
+                where   numero = p_salida
+                    and lo_codigo = p_local
+                    and organization_id = p_org_cd
+                    and bdg_codigo not in ( select codigo from BODEGA_PICKING
+                                            where   tipo = 'O' or codigo = 'Con');
+            exception when others then
+                p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (rt1)';
+                raise EXC_SALIR;
+            end;
+        --else: selecciona las bandejas segun los parametros
+        else
+            begin
+                select  formato_local, costo_bulto, costo_producto, porcentaje_bultos, orden_porcentaje
+                into    vl_formato, vl_costo_bulto, vl_costo_prod, vl_por_bulto, vl_orden_por
+                from    JSYB_RCM_PARAMETROS_GENERALES par, SU_SUCURSAL_TL suc
+                where   su_suc_id = p_local
+                    and su_empresa_id = p_empresa
+                    and nvl(su_formato, 0) = formato_local
+                    and su_empresa_id = codigo_empresa;
+                
+                --obtiene datos de parametros locales
+                open c0(vl_costo_bulto, vl_costo_prod, vl_por_bulto, vl_orden_por);
+                fetch c0 into vl_nro_salida, vl_rev_todo, vl_costo_bulto, vl_costo_prod, vl_por_bulto, vl_orden_por;
+                close c0;
+                
+                --if hay parametrosLocales then revisa segun los parametros locales
+                if vl_nro_salida is not null then
+                    --if ind_revisar_todos = 'S' then selecciona todas las bandejas: ind_revision_rcm = 'S'
+                    if vl_rev_todo = 'S' then
+                        begin
+                            update  BANDEJAS
+                                set ind_revision_rcm = 'S'
+                            where   numero = p_salida
+                                and lo_codigo = p_local
+                                and organization_id = p_org_cd
+                                and bdg_codigo not in ( select codigo from BODEGA_PICKING
+                                                        where   tipo = 'O' or codigo = 'Con');
+                        exception when others then
+                            p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (rt2)';
+                            raise EXC_SALIR;
+                        end;
+                    --else: selecciona las bandejas segun los parametros
+                    else
+                        --if rubroBandeja in (bdg_codigo) then bandeja: ind_revision_rcm = 'S'
+                        for c in c1 loop
+                            begin
+                                update  BANDEJAS
+                                    set ind_revision_rcm = 'S'
+                                where   codigo_bandeja = c.codigo_bandeja;
+                            exception when others then
+                                p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (c1)';
+                                exit;
+                            end;
+                        end loop;
+                        if p_error is not null then raise EXC_SALIR; end if;
+                    end if;
+                --else: revisa segun los parametros generales
+                else
+                    --if ZonaWMS in (zona_wms) then bandeja: ind_revision_rcm = 'S'
+                    for c in c2(vl_formato) loop
+                        begin
+                            update  BANDEJAS
+                                set ind_revision_rcm = 'S'
+                            where   codigo_bandeja = c.codigo_bandeja;
+                        exception when others then
+                            p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (c2)';
+                            exit;
+                        end;
+                    end loop;
+                    if p_error is not null then raise EXC_SALIR; end if;
+                end if;
+                
+                --if costoProducto.detalle_x_bandeja >= costo_producto then bandeja: ind_revision_rcm = 'S'
+                for c in c3(vl_costo_prod) loop
+                    begin
+                        update  BANDEJAS
+                            set ind_revision_rcm = 'S'
+                        where   codigo_bandeja = c.codigo_bandeja;
+                    exception when others then
+                        p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (c3)';
+                        exit;
+                    end;
+                end loop;
+                if p_error is not null then raise EXC_SALIR; end if;
+                
+                --if costoTotal.detalle_x_bandeja >= costo_bulto then bandeja: ind_revision_rcm = 'S'
+                for c in c4(vl_costo_bulto) loop
+                    begin
+                        update  BANDEJAS
+                            set ind_revision_rcm = 'S'
+                        where   codigo_bandeja = c.codigo_bandeja;
+                    exception when others then
+                        p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (c4)';
+                        exit;
+                    end;
+                end loop;
+                if p_error is not null then raise EXC_SALIR; end if;
+                
+                --verifica si completa o no el porcentaje minimo (vl_por_bulto)
+                select  count(*) into vl_tot_rev
+                from    BANDEJAS
+                where   numero = p_salida
+                    and lo_codigo = p_local
+                    and ind_revision_rcm = 'S'
+                    and organization_id = p_org_cd;
+                
+                if vl_tot_rev = 0 then vl_tot_rev2 := 1;
+                else vl_tot_rev2 := vl_tot_rev; end if;
+                
+                vl_por_resto := ((vl_tot_rev2*100)/vl_tot_ban);
+                if vl_por_resto <= vl_por_bulto then
+                    --selecciona segun vl_orden_por las bandejas faltantes
+                    vl_resto_ban := ceil(((vl_tot_rev2*vl_por_bulto)/vl_por_resto)-vl_tot_rev);
+                    --if vl_orden_por es ascendente
+                    if vl_orden_por = 'A' then
+                        for c in c5(vl_resto_ban) loop
+                            begin
+                                update  BANDEJAS
+                                    set ind_revision_rcm = 'S'
+                                where   codigo_bandeja = c.codigo_bandeja;
+                            exception when others then
+                                p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (c5)';
+                                exit;
+                            end;
+                        end loop;
+                        if p_error is not null then raise EXC_SALIR; end if;
+                    --if vl_orden_por es descendente
+                    elsif vl_orden_por = 'D' then
+                        for c in c6(vl_resto_ban) loop
+                            begin
+                                update  BANDEJAS
+                                    set ind_revision_rcm = 'S'
+                                where   codigo_bandeja = c.codigo_bandeja;
+                            exception when others then
+                                p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (c6)';
+                                exit;
+                            end;
+                        end loop;
+                        if p_error is not null then raise EXC_SALIR; end if;
+                    --if vl_orden_por es random
+                    elsif vl_orden_por = 'R' then
+                        for c in c7(vl_resto_ban) loop
+                            begin
+                                update  BANDEJAS
+                                    set ind_revision_rcm = 'S'
+                                where   codigo_bandeja = c.codigo_bandeja;
+                            exception when others then
+                                p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (c7)';
+                                exit;
+                            end;
+                        end loop;
+                        if p_error is not null then raise EXC_SALIR; end if;
+                    --else: ERROR
+                    else p_error := 'Orden Porcentaje "'||vl_orden_por||'" NO Existe';
+                    end if;
+                end if;
+            exception when no_data_found then
+                p_error := 'Formato del Local, NO Tiene Parametros Generales Asignados';
+                /* p_error := 'Local NO Tiene Formato Asignado'; */
+            end;
+        end if;
+    exception when EXC_SALIR then ROLLBACK;
+    end RegistraRevision;
+    
+    Procedure RegistraSalida(   p_id_conn number, p_nro_salida number, p_rev_todo number, p_fch_llegada date, 
+                                p_glosa varchar2, cod_status out number, msg_status out varchar2) IS
+        vl_local    number;
+        vl_org_cd   number;
+        vl_org_inv  number;
+        vl_empresa  number;
+        vl_usuario  varchar2(100);
+        
+        vl_estado   varchar2(10);
+        
+        vl_dummy    number;
+        
+        EXC_SALIR   exception;
+        
+        cursor c1 is
+            select  estado, bdg_codigo
+            from    SALIDAS_DET_TL
+            where   lo_codigo = vl_local
+                and numero = p_nro_salida
+                and organization_id = vl_org_cd;
+    begin
+        cod_status := 0;
+        msg_status := null;
+        
+        select  usuario, empresa, local
+        into    vl_usuario, vl_empresa, vl_local
+        from    JSYB_RCM_CONEXIONES
+        where   id_conn = p_id_conn;
+        
+        JSYB_FND_FUNCIONES.Jsyb_Fnd_Set_Empresa(vl_empresa);
+        vl_org_cd := JSYB_FND_FUNCIONES.Get_Org_Cd;
+        vl_org_inv := JSYB_FND_FUNCIONES.Get_Org_Inv;
+        
+        begin
+            select  estado  into    vl_estado
+            from    JSYB_RCM_SALIDAS_PROC
+            where   lo_codigo = vl_local
+                and organization_id = vl_org_cd
+                and codigo_empresa = vl_empresa
+                and numero_salida = p_nro_salida;
+            
+            if vl_estado = 'RB' then
+                RegistraRevision(p_nro_salida, vl_empresa, vl_local, vl_org_cd, vl_org_inv, p_rev_todo, msg_status);
+                if msg_status is not null then
+                    cod_status := 1;
+                    raise EXC_SALIR;
+                end if;
+                commit;
+            else
+                cod_status := 1;
+                msg_status := 'Estado del Proceso Debe Ser "RB"';
+                raise EXC_SALIR;
+            end if;
+        exception when no_data_found then
+            begin
+                select  1   into    vl_dummy
+                from    SALIDAS_ENC_TL
+                where   numero = p_nro_salida
+                    and organization_id = vl_org_cd;
+                
+                for i in c1 loop
+                    if i.estado != 'GD' then
+                        cod_status := 1;
+                        msg_status := 'Estado de la Salida Debe Ser "GD" Para el Rubro "'||i.bdg_codigo||'"';
+                        exit;
+                    end if;
+                end loop;
+                if cod_status = 1 then raise EXC_SALIR; end if;
+                
+                begin
+                    insert into JSYB_RCM_SALIDAS_PROC ( organization_id, numero_salida, codigo_empresa, lo_codigo, estado, 
+                                                        fecha_estado, usuario_estado, fecha_llegada, ind_revisar_todo, ind_robo_camion, 
+                                                        nro_vale_recep, fecha_emision_vale, usuario_emisor_vale, comentario)
+                    values (vl_org_cd, p_nro_salida, vl_empresa, vl_local, 'RB', 
+                            sysdate, vl_usuario, p_fch_llegada, p_rev_todo, null, 
+                            null, null, null, p_glosa);
+                exception when others then
+                    cod_status := 1;
+                    msg_status := 'NO Se Pudieron Insertar Los Datos en Tablas Internas';
+                    raise EXC_SALIR;
+                end;
+                
+                RegistraRevision(p_nro_salida, vl_empresa, vl_local, vl_org_cd, vl_org_inv, p_rev_todo, msg_status);
+                if msg_status is not null then
+                    cod_status := 1;
+                    raise EXC_SALIR;
+                end if;
+                commit;
+            exception when no_data_found then
+                cod_status := 1;
+                msg_status := 'Salida NO Existe Para la Empresa Dada';
+                raise EXC_SALIR;
+            end;
+        end;
+        msg_status := 'Salida Registrada Exitosamente';
+    exception when EXC_SALIR then ROLLBACK;
+    when no_data_found then
+        cod_status := 1;
+        msg_status := 'Conexion NO Existe';
+        ROLLBACK;
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end RegistraSalida;
+    
+    Procedure VerificarEstadosSalida(p_nro_salida number, p_local number, p_org_cd number, p_error out varchar2) is
+        cursor c1 is
+            select  bdg_codigo from SALIDAS_DET_TL
+            where   lo_codigo = p_local
+                and numero = p_nro_salida
+                and organization_id = p_org_cd;
+        vl_dummy number;
+    begin
+        for c in c1 loop
+            begin
+                select  1 into vl_dummy
+                from    BANDEJAS
+                where   estado != 'RL'
+                    and lo_codigo = p_local
+                    and numero = p_nro_salida
+                    and bdg_codigo = c.bdg_codigo
+                    and organization_id = p_org_cd
+                    and rownum < 2;
+            exception when no_data_found then
+                begin
+                    update  SALIDAS_DET_TL
+                        set estado = 'R'
+                    where   lo_codigo = p_local
+                        and numero = p_nro_salida
+                        and bdg_codigo = c.bdg_codigo
+                        and organization_id = p_org_cd;
+                    commit;
+                exception when others then
+                    p_error := 'NO Se Pudo Realizar Actualizacion a Tabla Salidas (es)';
+                    ROLLBACK;
+                end;
+            end;
+        end loop;
+    exception when others then
+        p_error := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end VerificarEstadosSalida;
+    
+    Procedure RegistraBandeja(  p_id_conn number, p_nro_salida number, p_nro_bandeja number, p_glosa varchar2, 
+                                p_cant_ban out number, cod_status out number, msg_status out varchar2) IS
+        vl_local    number;
+        vl_org_cd   number;
+        vl_org_inv  number;
+        vl_empresa  number;
+        vl_usuario  varchar2(100);
+        
+        
+        vl_ban_esc  number;
+        vl_cod_pub  number;
+        vl_cant_det number;
+        vl_estado   varchar2(2);
+        vl_rubro    varchar2(10);
+        vl_est_ban  varchar2(10);
+        vl_ind_rev  varchar2(1);
+        
+        vl_dummy    number;
+        
+        EXC_SALIR   exception;
+    begin
+        cod_status := 0;
+        msg_status := null;
+        
+        select  usuario, empresa, local
+        into    vl_usuario, vl_empresa, vl_local
+        from    JSYB_RCM_CONEXIONES
+        where   id_conn = p_id_conn;
+        
+        JSYB_FND_FUNCIONES.Jsyb_Fnd_Set_Empresa(vl_empresa);
+        vl_org_cd := JSYB_FND_FUNCIONES.Get_Org_Cd;
+        vl_org_inv := JSYB_FND_FUNCIONES.Get_Org_Inv;
+        
+        begin
+            select  1 into vl_dummy
+            from    JSYB_RCM_BANDEJAS ban, JSYB_RCM_SALIDAS_PROC sal
+            where   ban.lo_codigo = vl_local
+                and ban.lo_codigo = sal.lo_codigo
+                and codigo_bandeja = p_nro_bandeja
+                and ban.codigo_empresa = vl_empresa
+                and ban.organization_id = vl_org_cd
+                and ban.numero_salida = p_nro_salida
+                and ban.numero_salida = sal.numero_salida
+                and ban.codigo_empresa = sal.codigo_empresa
+                and ban.organization_id = sal.organization_id;
+            
+            cod_status := 1;
+            msg_status := 'Bandeja Ya Fue Escaneada Para la Salida y Local Dado';
+            raise EXC_SALIR;
+        exception when no_data_found then
+            begin
+                select  estado, ind_revision_rcm, codigo_bandeja_pub, bdg_codigo,
+                        decode(ind_revision_rcm, 'S', 'PREV', 'DIS')
+                into    vl_estado, vl_ind_rev, vl_cod_pub, vl_rubro, vl_est_ban
+                from    BANDEJAS
+                where   lo_codigo = vl_local
+                    and numero = p_nro_salida
+                    and organization_id = vl_org_cd
+                    and codigo_bandeja = p_nro_bandeja;
+                
+                if vl_estado != 'TR' then
+                    cod_status := 1;
+                    msg_status := 'Estado de la Bandeja Debe Ser "TR"';
+                    raise EXC_SALIR;
+                end if;
+                
+                begin
+                    select  1 into vl_dummy
+                    from    BODEGA_PICKING
+                    where   (tipo = 'O' or codigo = 'Con')
+                        and codigo = vl_rubro;
+                exception when no_data_found then
+                    select  count(*) into vl_cant_det
+                    from    DETALLE_X_BANDEJAS det
+                    where   organization_id = vl_org_cd
+                        and codigo_bandeja = p_nro_bandeja;
+                
+                    if vl_cant_det = 0 then
+                        cod_status := 1;
+                        msg_status := 'Bandeja NO Tiene Detalle';
+                        raise EXC_SALIR;
+                    end if;
+                end;
+                
+                if vl_ind_rev = 'S' then
+                    begin
+                        update  JSYB_ODE_ORDEN_DET_DESTINOS
+                            set estado = 'L',
+                                fecha_ult_estado =  sysdate
+                        where   id_bulto_externo = vl_cod_pub;
+                    exception when others then
+                        cod_status := 1;
+                        msg_status := 'NO Se Pudo Realizar Actualizacion a Tabla Destinos';
+                        raise EXC_SALIR;
+                    end;
+                else
+                    MOVS_BANDEJA_PKG.Submit_Bandeja(p_nro_bandeja, 'TD', vl_org_cd, p_glosa, vl_usuario, msg_status);
+                    if msg_status is not null then
+                        cod_status := 1;
+                        raise EXC_SALIR;
+                    end if;
+                    
+                    begin
+                        update  BANDEJAS
+                            set estado  = 'RL',
+                                modo_recepcion = 'RCIEGA',
+                                fecha_recepcion = sysdate,
+                                lo_codigo_recepcion = vl_local,
+                                usuario_recepcion   = vl_usuario
+                        where   codigo_bandeja  = p_nro_bandeja;
+                    exception when others then
+                        cod_status := 1;
+                        msg_status := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (es)';
+                        raise EXC_SALIR;
+                    end;
+                    
+                    VerificarEstadosSalida(p_nro_salida, vl_local, vl_org_cd, msg_status);
+                    if msg_status is not null then
+                        cod_status := 1;
+                        raise EXC_SALIR;
+                    end if;
+                end if;
+                
+                begin
+                    insert into JSYB_RCM_BANDEJAS ( organization_id, numero_salida, codigo_empresa, lo_codigo, codigo_bandeja, 
+                                                    estado, condicion_bandeja, codigo_bandeja_pub, fecha_rev_bulto, usuario_rev_bulto, 
+                                                    fecha_rev_contenido, usuario_rev_contenido, numero_revisiones, comentario)
+                    values (vl_org_cd, p_nro_salida, vl_empresa, vl_local, p_nro_bandeja, vl_est_ban, 
+                            'NOR', vl_cod_pub, null, null, null, null, null, p_glosa);
+                    commit;
+                exception when others then
+                    cod_status := 1;
+                    msg_status := 'NO Se Pudieron Insertar Los Datos en Tablas Internas';
+                    raise EXC_SALIR;
+                end;
+                
+                select count(*) into p_cant_ban
+                from    JSYB_RCM_BANDEJAS
+                where   lo_codigo = vl_local
+                    and codigo_empresa = vl_empresa
+                    and organization_id = vl_org_cd
+                    and numero_salida = p_nro_salida;
+                
+                if vl_ind_rev = 'S' then
+                    cod_status := 3;
+                    msg_status := 'Bandeja Debe Ser Revisada, Mantengala Separada';
+                else
+                    cod_status := 3;
+                    msg_status := 'Bandeja NO Debe Ser Revisada, Contenido Ya Fue Enviado Al Disponible';
+                end if;
+            exception when no_data_found then
+                cod_status := 1;
+                msg_status := 'Bandeja NO Existe Para la Salida y/o Local Dado';
+                raise EXC_SALIR;
+            end;
+        end;
+        /* msg_status := 'Bandeja Registrada Exitosamente'; */
+    exception when EXC_SALIR then ROLLBACK;
+    when no_data_found then
+        cod_status := 1;
+        msg_status := 'Conexion NO Existe';
+        ROLLBACK;
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end RegistraBandeja;
+
+    Procedure ValidaSalida(p_id_conn number, p_nro_salida number, cod_status out number, msg_status out varchar2) IS
+        vl_local    number;
+        vl_org_cd   number;
+        vl_org_inv  number;
+        vl_empresa  number;
+        vl_usuario  varchar2(100);
+        
+        vl_estado   varchar2(10);
+        
+        vl_dummy    number;
+        
+        EXC_SALIR   exception;
+    begin
+        cod_status := 0;
+        msg_status := null;
+        
+        select  usuario, empresa, local
+        into    vl_usuario, vl_empresa, vl_local
+        from    JSYB_RCM_CONEXIONES
+        where   id_conn = p_id_conn;
+        
+        JSYB_FND_FUNCIONES.Jsyb_Fnd_Set_Empresa(vl_empresa);
+        vl_org_cd := JSYB_FND_FUNCIONES.Get_Org_Cd;
+        vl_org_inv := JSYB_FND_FUNCIONES.Get_Org_Inv;
+        
+        begin
+            select  1   into    vl_dummy
+            from    SALIDAS_ENC_TL
+            where   numero = p_nro_salida
+                and organization_id = vl_org_cd;
+            
+            begin
+                select  estado  into    vl_estado
+                from    JSYB_RCM_SALIDAS_PROC
+                where   lo_codigo = vl_local
+                    and organization_id = vl_org_cd
+                    and codigo_empresa = vl_empresa
+                    and numero_salida = p_nro_salida;
+                
+                if vl_estado != 'RBC' then
+                    cod_status := 1;
+                    msg_status := 'Estado del Proceso Debe Ser "RBC"';
+                    raise EXC_SALIR;
+                end if;
+            exception when no_data_found then
+                cod_status := 1;
+                msg_status := 'Salida Aun NO Realiza Revision de Bultos';
+                raise EXC_SALIR;
+            end;
+        exception when no_data_found then
+            cod_status := 1;
+            msg_status := 'Salida NO Existe Para la Empresa Dada';
+            raise EXC_SALIR;
+        end;
+        msg_status := 'Salida Validada Exitosamente';
+    exception when EXC_SALIR then null;
+    when no_data_found then
+        cod_status := 1;
+        msg_status := 'Conexion NO Existe';
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+    end ValidaSalida;
+
+    Procedure ValidaBandeja(p_id_conn number, p_nro_salida number, p_nro_bandeja number,
+                            cod_status out number, msg_status out varchar2) IS
+        vl_local    number;
+        vl_org_cd   number;
+        vl_org_inv  number;
+        vl_empresa  number;
+        vl_usuario  varchar2(100);
+        
+        vl_nro_rev  number;
+        vl_ind_rev  varchar2(1);
+        vl_estado   varchar2(10);
+        vl_est_ban  varchar2(10);
+        
+        vl_dummy    number;
+        
+        EXC_SALIR   exception;
+    begin
+        cod_status := 0;
+        msg_status := null;
+        
+        select  usuario, empresa, local
+        into    vl_usuario, vl_empresa, vl_local
+        from    JSYB_RCM_CONEXIONES
+        where   id_conn = p_id_conn;
+        
+        JSYB_FND_FUNCIONES.Jsyb_Fnd_Set_Empresa(vl_empresa);
+        vl_org_cd := JSYB_FND_FUNCIONES.Get_Org_Cd;
+        vl_org_inv := JSYB_FND_FUNCIONES.Get_Org_Inv;
+        
+        begin
+            select  estado, ind_revision_rcm
+            into    vl_estado, vl_ind_rev
+            from    BANDEJAS
+            where   lo_codigo = vl_local
+                and numero = p_nro_salida
+                and organization_id = vl_org_cd
+                and codigo_bandeja = p_nro_bandeja;
+            
+            if vl_estado = 'RL' and vl_ind_rev = 'N' then
+                cod_status := 1;
+                msg_status := 'Bandeja NO Debe Ser Revisada, Contenido Ya Fue Enviado Al Disponible';
+                raise EXC_SALIR;
+            end if;
+            
+            if vl_estado != 'TR' then
+                cod_status := 1;
+                msg_status := 'Estado de la Bandeja Debe Ser "TR"';
+                raise EXC_SALIR;
+            end if;
+            
+            begin
+                select  estado  into    vl_estado
+                from    JSYB_RCM_BANDEJAS
+                where   lo_codigo = vl_local
+                    and organization_id = vl_org_cd
+                    and codigo_empresa = vl_empresa
+                    and numero_salida = p_nro_salida
+                    and codigo_bandeja = p_nro_bandeja;
+                
+                if vl_estado != 'PREV' then
+                    cod_status := 1;
+                    msg_status := 'Estado de la Bandeja a Revisar Debe Ser "PREV"';
+                    raise EXC_SALIR;
+                end if;
+                
+                select  count(*)+1 into vl_nro_rev
+                from    JSYB_RCM_REVISIONES_CONTENIDO
+                where   lo_codigo = vl_local
+                    and codigo_empresa = vl_empresa
+                    and organization_id = vl_org_cd
+                    and numero_salida = p_nro_salida
+                    and codigo_bandeja = p_nro_bandeja;
+                
+                begin
+                    insert into JSYB_RCM_REVISIONES_CONTENIDO ( organization_id, numero_salida, codigo_empresa, lo_codigo, 
+                                                                codigo_bandeja, numero_revision, estado, fecha_revision, 
+                                                                usuario_revision, numero_revision_pareo)
+                    values (vl_org_cd, p_nro_salida, vl_empresa, vl_local, p_nro_bandeja, vl_nro_rev, 'EP', sysdate, vl_usuario, null);
+                    commit;
+                exception when others then
+                    cod_status := 1;
+                    msg_status := 'NO Se Pudieron Insertar Los Datos en Tablas Internas';
+                    raise EXC_SALIR;
+                end;
+            exception when no_data_found then
+                cod_status := 1;
+                msg_status := 'Bandeja Aun NO Realiza Revision de Bultos';
+                raise EXC_SALIR;
+            end;
+        exception when no_data_found then
+            cod_status := 1;
+            msg_status := 'Bandeja NO Existe Para la Salida y/o Local Dado';
+            raise EXC_SALIR;
+        end;
+        msg_status := 'Bandeja Validada Exitosamente';
+    exception when EXC_SALIR then ROLLBACK;
+    when no_data_found then
+        cod_status := 1;
+        msg_status := 'Conexion NO Existe';
+        ROLLBACK;
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end ValidaBandeja;
+    
+    Procedure RegistraProducto( p_id_conn number, p_nro_salida number, p_nro_bandeja number, p_cod_ingresado varchar2,
+                                p_cant_prod out number, p_desc_prod out varchar2, cod_status out number, msg_status out varchar2) IS
+        vl_local    number;
+        vl_org_cd   number;
+        vl_org_inv  number;
+        vl_empresa  number;
+        vl_usuario  varchar2(100);
+        
+        vl_nro_rev  number;
+        vl_nro_sec  number;
+        vl_item_id  number;
+        vl_cbarra   VARCHAR2(256);
+        
+        vl_dummy    number;
+        
+        EXC_SALIR   exception;
+    begin
+        cod_status := 0;
+        msg_status := null;
+        
+        select  usuario, empresa, local
+        into    vl_usuario, vl_empresa, vl_local
+        from    JSYB_RCM_CONEXIONES
+        where   id_conn = p_id_conn;
+        
+        JSYB_FND_FUNCIONES.Jsyb_Fnd_Set_Empresa(vl_empresa);
+        vl_org_cd := JSYB_FND_FUNCIONES.Get_Org_Cd;
+        vl_org_inv := JSYB_FND_FUNCIONES.Get_Org_Inv;
+        
+        begin
+            vl_cbarra := Get_Barra_Gs1(p_cod_ingresado);
+            if vl_cbarra is null then vl_cbarra := p_cod_ingresado; end if;
+            
+            select  barcode_qty, barcode_item_id
+            into    p_cant_prod, vl_item_id
+            from    SYB_ITEM_BARCODES
+            where   barcode_qty > 0
+                and barcode_number = vl_cbarra
+                and organization_id = vl_org_inv;
+            
+            begin
+                select  description
+                into    p_desc_prod
+                from    MTL_SYSTEM_ITEMS_B
+                where   organization_id = vl_org_inv
+                    and inventory_item_id = vl_item_id;
+                
+                begin                    
+                    select numero_revision into vl_nro_rev
+                    from (select    numero_revision
+                            from    JSYB_RCM_REVISIONES_CONTENIDO
+                            where   lo_codigo = vl_local
+                                and codigo_empresa = vl_empresa
+                                and organization_id = vl_org_cd
+                                and numero_salida = p_nro_salida
+                                and codigo_bandeja = p_nro_bandeja
+                            order by numero_revision desc)
+                    where rownum < 2;
+                    
+                    select  count(*)+1 into vl_nro_sec
+                    from    JSYB_RCM_DETALLE_REVISION
+                    where   lo_codigo = vl_local
+                        and codigo_empresa = vl_empresa
+                        and organization_id = vl_org_cd
+                        and numero_salida = p_nro_salida
+                        and codigo_bandeja = p_nro_bandeja;
+                    
+                    begin
+                        insert into JSYB_RCM_DETALLE_REVISION ( organization_id, numero_salida, codigo_empresa, lo_codigo, codigo_bandeja, 
+                                                                numero_revision, numero_secuencia, codigo_producto_ing, cantidad_recep, 
+                                                                org_id_inv, inventory_item_id, fecha_escaneo)
+                        values (vl_org_cd, p_nro_salida, vl_empresa, vl_local, p_nro_bandeja, vl_nro_rev, vl_nro_sec, p_cod_ingresado, 
+                                p_cant_prod, vl_org_inv, vl_item_id, sysdate);
+                    exception when others then
+                        cod_status := 1;
+                        msg_status := 'NO Se Pudieron Insertar Los Datos en Tablas Internas';
+                        raise EXC_SALIR;
+                    end;
+                    
+                    begin
+                        update  JSYB_RCM_BANDEJAS
+                            set estado = 'ERC'
+                        where   lo_codigo = vl_local
+                            and codigo_empresa = vl_empresa
+                            and organization_id = vl_org_cd
+                            and numero_salida = p_nro_salida
+                            and codigo_bandeja = p_nro_bandeja;
+                    exception when others then
+                        cod_status := 1;
+                        msg_status := 'NO Se Pudieron Actualizar Los Datos en Tablas Internas';
+                        raise EXC_SALIR;
+                    end;
+                exception when no_data_found then
+                    cod_status := 1;
+                    msg_status := 'NO Se Encontro Numero de Revision Asociado a los Datos Ingresados';
+                    raise EXC_SALIR;
+                end;
+            exception when no_data_found then
+                cod_status := 1;
+                msg_status := 'Producto NO Existe';
+                raise EXC_SALIR;
+            end;
+        exception when no_data_found then
+            cod_status := 1;
+            msg_status := 'Codigo de Barra NO Existe o NO Supera la Cantidad Minima para Ser Procesada';
+            raise EXC_SALIR;
+        when too_many_rows then
+            cod_status := 1;
+            msg_status := 'Codigo de Barra Tiene Mas de Un Producto Asociado';
+            raise EXC_SALIR;
+        end;
+        
+        msg_status := 'Producto Registrado Exitosamente';
+        commit;
+    exception when EXC_SALIR then ROLLBACK;
+    when no_data_found then
+        cod_status := 1;
+        msg_status := 'Conexion NO Existe';
+        ROLLBACK;
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end RegistraProducto;
+    
+    Procedure RevisaBultos( p_id_conn number, p_nro_salida number, p_resp number, p_link_boucher out varchar2, 
+                            p_link_gdmt out varchar2, cod_status out number, msg_status out varchar2) IS
+        vl_local    number;
+        vl_org_cd   number;
+        vl_org_inv  number;
+        vl_empresa  number;
+        vl_usuario  varchar2(100);
+        
+        vl_resto    number;     
+        cant_ban_in number;
+        cant_ban_es number;
+        
+        vl_dummy    number;
+        
+        EXC_SALIR   exception;
+    begin
+        cod_status := 0;
+        msg_status := null;
+        
+        select  usuario, empresa, local
+        into    vl_usuario, vl_empresa, vl_local
+        from    JSYB_RCM_CONEXIONES
+        where   id_conn = p_id_conn;
+        
+        JSYB_FND_FUNCIONES.Jsyb_Fnd_Set_Empresa(vl_empresa);
+        vl_org_cd := JSYB_FND_FUNCIONES.Get_Org_Cd;
+        vl_org_inv := JSYB_FND_FUNCIONES.Get_Org_Inv;
+        
+        select  count(*) into cant_ban_in
+        from    BANDEJAS
+        where   lo_codigo = vl_local
+            and numero = p_nro_salida
+            and organization_id = vl_org_cd;
+        
+        select  count(*) into cant_ban_es
+        from    JSYB_RCM_BANDEJAS
+        where   lo_codigo = vl_local
+            and codigo_empresa = vl_empresa
+            and organization_id = vl_org_cd
+            and numero_salida = p_nro_salida;
+        
+        vl_resto := cant_ban_in - cant_ban_es;
+        if vl_resto > 0 then
+            if p_resp = 0 then --Resp Por Defecto='Preguntar'
+                cod_status := 2;
+                msg_status := 'Faltan '||vl_resto||' Bandejas Por Escanear, Desea Continuar?';
+                raise EXC_SALIR;
+            elsif p_resp = 1 then --Resp='Si'
+                begin
+                    /****MERMA TRANSPORTISTA*/
+                    p_link_gdmt := 'link_gdmt.pdf';
+                end;
+            else --Resp NO Definida='Error'
+                cod_status := 1;
+                msg_status := 'Faltan '||vl_resto||' Bandejas Por Escanear';
+                raise EXC_SALIR;
+            end if;
+        end if;
+        
+        begin
+            /****GENERAR BOUCHER*/
+            p_link_boucher := 'link_boucher.pdf';
+        end;
+        
+        begin
+            update  JSYB_RCM_SALIDAS_PROC
+                set estado = 'RBC',
+                    fecha_estado = sysdate,
+                    usuario_estado = vl_usuario,
+                    ind_robo_camion = 'N'
+            where   lo_codigo = vl_local
+                and codigo_empresa = vl_empresa
+                and organization_id = vl_org_cd
+                and numero_salida = p_nro_salida;
+            
+            update  JSYB_RCM_BANDEJAS
+                set fecha_rev_bulto = sysdate,
+                    usuario_rev_bulto = vl_usuario
+            where   lo_codigo = vl_local
+                and codigo_empresa = vl_empresa
+                and organization_id = vl_org_cd
+                and numero_salida = p_nro_salida;
+            commit;
+        exception when others then
+            cod_status := 1;
+            msg_status := 'NO Se Pudieron Actualizar Los Datos en Tablas Internas';
+            raise EXC_SALIR;
+        end;
+        cod_status := 3;
+        msg_status := 'Revision de Bultos Normal Cerrada Exitosamente';
+    exception when EXC_SALIR then ROLLBACK;
+    when no_data_found then
+        cod_status := 1;
+        msg_status := 'Conexion NO Existe';
+        ROLLBACK;
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end RevisaBultos;
+    
+    Procedure CamionRobado( p_id_conn number, p_nro_salida number, p_link_boucher out varchar2, 
+                            p_link_gdmt out varchar2, cod_status out number, msg_status out varchar2) IS
+        vl_local    number;
+        vl_org_cd   number;
+        vl_org_inv  number;
+        vl_empresa  number;
+        vl_usuario  varchar2(100);
+        
+        cant_ban_ext number;
+        cant_ban_int number;
+        
+        vl_dummy    number;
+        
+        EXC_SALIR   exception;
+        
+        /* cursor c1(pp_local number, pp_org_cd number) is */
+        cursor c1 is
+            select  codigo_bandeja, codigo_bandeja_pub
+            from    BANDEJAS
+            where   lo_codigo = vl_local
+                and numero = p_nro_salida
+                and organization_id = vl_org_cd;
+    begin
+        cod_status := 0;
+        msg_status := null;
+        
+        select  usuario, empresa, local
+        into    vl_usuario, vl_empresa, vl_local
+        from    JSYB_RCM_CONEXIONES
+        where   id_conn = p_id_conn;
+        
+        JSYB_FND_FUNCIONES.Jsyb_Fnd_Set_Empresa(vl_empresa);
+        vl_org_cd := JSYB_FND_FUNCIONES.Get_Org_Cd;
+        vl_org_inv := JSYB_FND_FUNCIONES.Get_Org_Inv;
+        
+        begin
+            select  1 into vl_dummy
+            from    JSYB_RCM_BANDEJAS
+            where   lo_codigo = vl_local
+                and codigo_empresa = vl_empresa
+                and organization_id = vl_org_cd
+                and numero_salida = p_nro_salida
+                and rownum < 2;
+            cod_status := 1;
+            msg_status := 'Salida Ya Tiene Bandejas Escaneadas, NO Puede Indicar Camion Robado';
+            raise EXC_SALIR;
+        exception when no_data_found then
+            begin
+                select  codigo_bandeja into vl_dummy
+                from    BANDEJAS
+                where   estado != 'TR'
+                    and lo_codigo = vl_local
+                    and numero = p_nro_salida
+                    and organization_id = vl_org_cd
+                    and rownum < 2;
+                cod_status := 1;
+                msg_status := 'La Bandeja #'||vl_dummy||', Tiene Un Estado Diferente de "TR"';
+                raise EXC_SALIR;
+            exception when no_data_found then
+                /* for c in c1(vl_local, vl_org_cd) loop */
+                for c in c1 loop
+                    begin
+                        insert into JSYB_RCM_BANDEJAS ( organization_id, numero_salida, codigo_empresa, lo_codigo, codigo_bandeja, 
+                                    estado, condicion_bandeja, codigo_bandeja_pub, fecha_rev_bulto, usuario_rev_bulto, 
+                                    fecha_rev_contenido, usuario_rev_contenido, numero_revisiones)
+                        values (vl_org_cd, p_nro_salida, vl_empresa, vl_local, c.codigo_bandeja, 'MTRP', 'MERTRAN', 
+                                c.codigo_bandeja_pub, sysdate, vl_usuario, null, null, null);
+                    exception when others then
+                        cod_status := 1;
+                        msg_status := 'NO Se Pudieron Insertar Los Datos en Tablas Internas';
+                        raise EXC_SALIR;
+                    end;
+                end loop;
+                begin
+                    update  JSYB_RCM_SALIDAS_PROC
+                        set estado = 'RBC',
+                            fecha_estado = sysdate,
+                            usuario_estado = vl_usuario,
+                            ind_robo_camion = 'S'
+                    where   lo_codigo = vl_local
+                        and codigo_empresa = vl_empresa
+                        and numero_salida = p_nro_salida
+                        and organization_id = vl_org_cd;
+                    
+                    update  SALIDAS_DET_TL
+                        set estado = 'RF'
+                    where   numero = p_nro_salida
+                        and organization_id = vl_org_cd;
+                    
+                    update  BANDEJAS
+                        set estado = 'RF'
+                    where   lo_codigo = vl_local
+                        and numero = p_nro_salida
+                        and organization_id = vl_org_cd;
+                    commit;
+                    
+                    begin
+                        /****MERMA TRANSPORTISTA*/
+                        p_link_gdmt := 'link_gdmt.pdf';
+                    end;
+                    
+                    begin
+                        /****GENERAR BOUCHER*/
+                        p_link_boucher := 'link_boucher.pdf';
+                    end;
+                exception when others then
+                    cod_status := 1;
+                    msg_status := 'NO Se Pudieron Actualizar Los Datos en Tablas Internas';
+                    raise EXC_SALIR;
+                end;
+            end;
+        end;
+        cod_status := 3;
+        msg_status := 'Revision de Bultos Por Camion Robado Cerrada Exitosamente';
+    exception when EXC_SALIR then ROLLBACK;
+    when no_data_found then
+        cod_status := 1;
+        msg_status := 'Conexion NO Existe';
+        ROLLBACK;
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end CamionRobado;
+    
+    Procedure Get_Diferencia_bandeja(   p_nro_salida number, p_nro_bandeja number, p_empresa number, p_local number, 
+                                        p_local_dt number, p_org_cd number, p_org_inv number, p_org_loc number, 
+                                        p_org_usr number, p_nro_rev number, p_usuario varchar2, msg_status out varchar2) IS
+        v_sobr  number;
+        v_falt  number;
+        
+        EXC_SALIR   exception;
+        
+        --Productos Existentes con Diferencia de Cantidades
+        cursor c1 is
+            select  db.inventory_item_id, decode(sign(db.cantidad - rev.cantidad_recep), +1, db.cantidad - rev.cantidad_recep, 0) falt,
+                    decode(sign(db.cantidad - rev.cantidad_recep), -1, abs(db.cantidad - rev.cantidad_recep), 0) sobr
+            from    (select	inventory_item_id, sum(cantidad) cantidad
+                    from    DETALLE_X_BANDEJAS
+                    where   codigo_bandeja = p_nro_bandeja 
+                    group by inventory_item_id) db,
+                    (select	rev.inventory_item_id, sum(rev.cantidad_recep) cantidad_recep
+                    from    JSYB_RCM_DETALLE_REVISION rev
+                    where   rev.lo_codigo = p_local
+                        and rev.codigo_empresa = p_empresa
+                        and rev.organization_id = p_org_cd
+                        and rev.numero_revision = p_nro_rev
+                        and rev.numero_salida = p_nro_salida
+                        and rev.codigo_bandeja = p_nro_bandeja
+                    group by rev.inventory_item_id) rev
+            where   db.inventory_item_id = rev.inventory_item_id
+                and nvl(db.cantidad, 0) != nvl(rev.cantidad_recep, 0);
+    
+        --Productos Sobrantes que no estan en la bandeja
+        cursor c2 is
+        select	inventory_item_id, nvl(sum(cantidad_recep), 0) sobr
+        from    JSYB_RCM_DETALLE_REVISION rev
+        where   lo_codigo = p_local
+            and codigo_empresa = p_empresa
+            and organization_id = p_org_cd
+            and numero_revision = p_nro_rev
+            and numero_salida = p_nro_salida
+            and codigo_bandeja = p_nro_bandeja
+            and inventory_item_id not in (  select  inventory_item_id
+                                            from    DETALLE_X_BANDEJAS ban
+                                            where   ban.codigo_bandeja = rev.codigo_bandeja
+                                                and ban.organization_id = rev.organization_id)
+        group by inventory_item_id
+        having nvl(sum(cantidad_recep), 0) > 0;
+    
+    
+        --Productos Faltantes que no fueron escaneados
+        cursor c3 is
+        select  inventory_item_id, nvl(sum(cantidad ), 0) falt
+        from    DETALLE_X_BANDEJAS ban
+        where   organization_id = p_org_cd
+            and codigo_bandeja = p_nro_bandeja
+            and inventory_item_id not in (  select  inventory_item_id
+                                            from    JSYB_RCM_DETALLE_REVISION rev
+                                            where   lo_codigo = p_local
+                                                and codigo_empresa = p_empresa
+                                                and numero_revision = p_nro_rev
+                                                and numero_salida = p_nro_salida
+                                                and rev.codigo_bandeja = ban.codigo_bandeja
+                                                and rev.organization_id = ban.organization_id)
+        group by inventory_item_id
+        having nvl(sum(cantidad ), 0) > 0;
+    begin
+        Diff_Inicializa;
+        
+        v_sobr := 0;
+        v_falt := 0;
+        
+        for i in c1 loop
+            if i.falt > 0 and i.sobr > 0 Then
+                msg_status := 'Producto es Sobrante y Faltante a la Vez!';
+                raise EXC_SALIR;
+            elsif i.falt > 0 Then
+                Diff_Registrar_Item(i.inventory_item_id, 'FAL', i.falt, msg_status);
+                if msg_status is not null then
+                    raise EXC_SALIR;
+                end if;
+            elsif i.sobr > 0 Then
+                Diff_Registrar_Item(i.inventory_item_id, 'SOB', i.sobr, msg_status);
+                if msg_status is not null then
+                    raise EXC_SALIR;
+                end if;
+            else
+                msg_status := 'Producto NO es Sobrante NI Faltante !';
+                raise EXC_SALIR;
+            end if;
+            
+            v_sobr := v_sobr + nvl(i.sobr, 0);
+            v_falt := v_falt + nvl(i.falt, 0);
+        end loop;
+        
+        for i in c2 loop
+            Diff_Registrar_Item(i.inventory_item_id, 'SOB', i.sobr, msg_status);
+            if msg_status is not null then
+                raise EXC_SALIR;
+            end if;
+            v_sobr := v_sobr + nvl(i.sobr, 0);
+        end loop;
+            
+        for i in c3 loop
+            Diff_Registrar_Item(i.inventory_item_id, 'FAL', i.falt, msg_status);
+            if msg_status is not null then
+                raise EXC_SALIR;
+            end if;
+            v_falt := v_falt + nvl(i.falt, 0);
+        end loop;
+        
+        Procesar_Faltantes(p_nro_bandeja, p_local, p_local_dt, p_org_inv, p_org_loc, p_org_usr, p_usuario, msg_status);
+        if msg_status is not null then
+            raise EXC_SALIR;
+        end if;
+        
+        Procesar_Sobrantes(p_nro_bandeja, p_local, p_local_dt, p_org_inv, p_org_usr, msg_status);
+        if msg_status is not null then
+            raise EXC_SALIR;
+        end if;
+        
+        /****Procesar_Merma(p_local, p_org_loc, p_usuario, msg_status);
+        if msg_status is not null then
+            raise EXC_SALIR;
+        end if;*/
+    exception when EXC_SALIR then ROLLBACK;
+    when others then
+        msg_status := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end Get_Diferencia_bandeja;
+    
+    Procedure RevisaContenido(  p_id_conn number, p_nro_salida number, p_nro_bandeja number,
+                                p_glosa varchar2, cod_status out number, msg_status out varchar2) IS
+        vl_local    number;
+        vl_local_dt number;
+        vl_org_cd   number;
+        vl_org_inv  number;
+        vl_org_loc  number;
+        vl_org_usr  number;
+        vl_empresa  number;
+        vl_usuario  varchar2(100);
+        
+        vl_ult_rev number;
+        vl_nro_rev  number;
+        cant_origen number;
+        cant_ult_es number;
+        cant_esc    number;
+        cant_dif_1  number;
+        cant_dif_2  number;
+        cant_dif_3  number;
+        
+        vl_pareo    number;
+        cant_total  number;
+        cant_escan  number;
+        
+        vl_dummy    number;
+        
+        EXC_SALIR   exception;
+    begin
+        vl_pareo := 0;
+        cod_status := 0;
+        msg_status := null;
+        
+        select  usuario, empresa, local
+        into    vl_usuario, vl_empresa, vl_local
+        from    JSYB_RCM_CONEXIONES
+        where   id_conn = p_id_conn;
+        
+        JSYB_FND_FUNCIONES.Jsyb_Fnd_Set_Empresa(vl_empresa);
+        vl_org_cd := JSYB_FND_FUNCIONES.Get_Org_Cd;
+        vl_org_inv := JSYB_FND_FUNCIONES.Get_Org_Inv;
+        vl_org_loc := JSYB_FND_FUNCIONES.Get_Org_Locales;
+        vl_org_usr := JSYB_FND_FUNCIONES.Get_Org_Inv_Usr;
+        vl_local_dt := DT_ADM_SUCURSALES_CLI_PKG.Get_sucursal_DT(vl_empresa, vl_local);
+        
+        begin
+            --obtiene el numero_revision actual
+            select  max(numero_revision) into vl_ult_rev
+            from    JSYB_RCM_REVISIONES_CONTENIDO 
+            where   lo_codigo = vl_local
+                and codigo_empresa = vl_empresa
+                and organization_id = vl_org_cd
+                and numero_salida = p_nro_salida
+                and codigo_bandeja = p_nro_bandeja;
+            
+            --obtiene la cantidad de productos originales
+            select  count(*) into cant_origen
+            from    DETALLE_X_BANDEJAS
+            where   organization_id = vl_org_cd
+                and codigo_bandeja = p_nro_bandeja;
+            
+            --obtiene la cantidad de productos del último escaneo
+            select  count(*) into cant_ult_es
+            from    JSYB_RCM_DETALLE_REVISION
+            where   lo_codigo = vl_local
+                and codigo_empresa = vl_empresa
+                and organization_id = vl_org_cd
+                and numero_salida = p_nro_salida
+                and numero_revision = vl_ult_rev
+                and codigo_bandeja = p_nro_bandeja;
+            
+            vl_nro_rev := vl_ult_rev;
+            if cant_origen = cant_ult_es then
+                --obtiene la cantidad de productos que estan en el orginal no en la ult_rev
+                select  count(*) into cant_dif_1
+                from    DETALLE_X_BANDEJAS ban
+                where   organization_id = vl_org_cd
+                    and codigo_bandeja = p_nro_bandeja
+                    and inventory_item_id not in (  select  inventory_item_id
+                                                    from    JSYB_RCM_DETALLE_REVISION rev
+                                                    where   lo_codigo = vl_local
+                                                        and codigo_empresa = vl_empresa
+                                                        and numero_salida = p_nro_salida
+                                                        and numero_revision = vl_ult_rev
+                                                        and rev.codigo_bandeja = ban.codigo_bandeja
+                                                        and rev.organization_id = ban.organization_id);
+                if cant_dif_1 = 0 then
+                    --obtiene la cantidad de productos que estan en el ult_rev no en la orginal
+                    select  count(*) into cant_dif_2
+                    from    JSYB_RCM_DETALLE_REVISION rev
+                    where   lo_codigo = vl_local
+                        and codigo_empresa = vl_empresa
+                        and organization_id = vl_org_cd
+                        and numero_salida = p_nro_salida
+                        and numero_revision = vl_ult_rev
+                        and codigo_bandeja = p_nro_bandeja
+                        and inventory_item_id not in (  select  inventory_item_id
+                                                        from    DETALLE_X_BANDEJAS ban
+                                                        where   ban.codigo_bandeja = rev.codigo_bandeja
+                                                            and ban.organization_id = rev.organization_id);
+                    if cant_dif_2 = 0 then
+                        --obtiene la cantidad de productos que tienen cantidades diferentes
+                        select  count(*) into cant_dif_3
+                        from    (select inventory_item_id, sum(cantidad) cantidad
+                                from    DETALLE_X_BANDEJAS
+                                where   codigo_bandeja = p_nro_bandeja 
+                                group by inventory_item_id) det,
+                                (select rev.inventory_item_id, sum(rev.cantidad_recep) cantidad_recep
+                                from    JSYB_RCM_DETALLE_REVISION rev
+                                where   rev.lo_codigo = vl_local
+                                    and rev.codigo_empresa = vl_empresa
+                                    and rev.organization_id = vl_org_cd
+                                    and rev.numero_salida = p_nro_salida
+                                    and rev.numero_revision = vl_ult_rev
+                                    and rev.codigo_bandeja = p_nro_bandeja
+                                group by rev.inventory_item_id) rev
+                        where   rev.inventory_item_id = det.inventory_item_id
+                            and nvl(det.cantidad, 0) != nvl(rev.cantidad_recep, 0);
+                        
+                        if cant_dif_3 = 0 then
+                            MOVS_BANDEJA_PKG.Submit_Bandeja(p_nro_bandeja, 'TD', vl_org_cd, p_glosa, vl_usuario, msg_status);
+                            if msg_status is not null then
+                                cod_status := 1;
+                                raise EXC_SALIR;
+                            end if;
+                            
+                            begin
+                                update  BANDEJAS
+                                    set estado  = 'RL',
+                                        modo_recepcion = 'RCIEGA',
+                                        fecha_recepcion = sysdate,
+                                        lo_codigo_recepcion = vl_local,
+                                        usuario_recepcion   = vl_usuario
+                                where   codigo_bandeja  = p_nro_bandeja;
+                            exception when others then
+                                cod_status := 1;
+                                msg_status := 'NO Se Pudo Realizar Actualizacion a Tabla Bandejas (es)';
+                                raise EXC_SALIR;
+                            end;
+                            
+                            VerificarEstadosSalida(p_nro_salida, vl_local, vl_org_cd, msg_status);
+                            if msg_status is not null then
+                                cod_status := 1;
+                                exit;
+                            end if;
+                            
+                            vl_pareo := 1;
+                        end if;--cant_dif_3
+                    end if;--cant_dif_2
+                end if;--cant_dif_1
+            else
+                while vl_nro_rev > 0 loop
+                    vl_nro_rev := vl_nro_rev - 1;
+                    --obtiene la cantidad de productos del escaneo vl_nro_rev
+                    select  count(*) into cant_esc
+                    from    JSYB_RCM_DETALLE_REVISION
+                    where   lo_codigo = vl_local
+                        and codigo_empresa = vl_empresa
+                        and organization_id = vl_org_cd
+                        and numero_salida = p_nro_salida
+                        and numero_revision = vl_nro_rev
+                        and codigo_bandeja = p_nro_bandeja;
+                    
+                    if cant_esc = cant_ult_es then
+                        --obtiene la cantidad de productos que estan en la ult_rev no en el vl_nro_rev
+                        select  count(*) into cant_dif_1
+                        from    JSYB_RCM_DETALLE_REVISION rm
+                        where   lo_codigo = vl_local
+                            and codigo_empresa = vl_empresa
+                            and organization_id = vl_org_cd
+                            and numero_salida = p_nro_salida
+                            and numero_revision = vl_ult_rev
+                            and codigo_bandeja = p_nro_bandeja
+                            and inventory_item_id not in (  select  inventory_item_id
+                                                            from    JSYB_RCM_DETALLE_REVISION ra
+                                                            where   ra.lo_codigo = rm.lo_codigo
+                                                                and ra.numero_revision = vl_nro_rev
+                                                                and ra.numero_salida = rm.numero_salida
+                                                                and ra.codigo_bandeja = rm.codigo_bandeja
+                                                                and ra.codigo_empresa = rm.codigo_empresa
+                                                                and ra.organization_id = rm.organization_id);
+                        if cant_dif_1 = 0 then
+                            --obtiene la cantidad de productos que estan en el vl_nro_rev no en la ult_rev
+                            select  count(*) into cant_dif_2
+                            from    JSYB_RCM_DETALLE_REVISION ra
+                            where   lo_codigo = vl_local
+                                and codigo_empresa = vl_empresa
+                                and organization_id = vl_org_cd
+                                and numero_salida = p_nro_salida
+                                and numero_revision = vl_nro_rev
+                                and codigo_bandeja = p_nro_bandeja
+                                and inventory_item_id not in (  select  inventory_item_id
+                                                                from    JSYB_RCM_DETALLE_REVISION rm
+                                                                where   rm.lo_codigo = ra.lo_codigo
+                                                                    and rm.numero_revision = vl_ult_rev
+                                                                    and rm.numero_salida = ra.numero_salida
+                                                                    and rm.codigo_bandeja = ra.codigo_bandeja
+                                                                    and rm.codigo_empresa = ra.codigo_empresa
+                                                                    and rm.organization_id = ra.organization_id);
+                            if cant_dif_2 = 0 then
+                                --obtiene la cantidad de productos que tienen cantidades diferentes
+                                select  count(*) into cant_dif_3
+                                from    (select inventory_item_id, sum(cantidad_recep) cantidad_recep
+                                        from    JSYB_RCM_DETALLE_REVISION
+                                        where   lo_codigo = vl_local
+                                            and codigo_empresa = vl_empresa
+                                            and organization_id = vl_org_cd
+                                            and numero_salida = p_nro_salida
+                                            and numero_revision = vl_ult_rev
+                                            and codigo_bandeja = p_nro_bandeja
+                                        group by inventory_item_id) rm,
+                                        (select ra.inventory_item_id, sum(ra.cantidad_recep) cantidad_recep
+                                        from    JSYB_RCM_DETALLE_REVISION ra
+                                        where   ra.lo_codigo = vl_local
+                                            and ra.codigo_empresa = vl_empresa
+                                            and ra.organization_id = vl_org_cd
+                                            and ra.numero_salida = p_nro_salida
+                                            and ra.numero_revision = vl_nro_rev
+                                            and ra.codigo_bandeja = p_nro_bandeja
+                                        group by ra.inventory_item_id) ra
+                                where   rm.inventory_item_id = ra.inventory_item_id
+                                    and nvl(rm.cantidad_recep, 0) != nvl(ra.cantidad_recep, 0);
+                                
+                                if cant_dif_3 = 0 then
+                                    Get_Diferencia_bandeja( p_nro_salida, p_nro_bandeja, vl_empresa, vl_local,
+                                                            vl_local_dt, vl_org_cd, vl_org_inv, vl_org_loc,
+                                                            vl_org_usr, vl_nro_rev, vl_usuario, msg_status);
+                                    if msg_status is not null then
+                                        cod_status := 1;
+                                        exit;
+                                    end if;
+                                    
+                                    vl_pareo := 2;
+									exit;
+                                end if;--cant_dif_3
+                            end if;--cant_dif_2
+                        end if;--cant_dif_1
+                    end if;
+                end loop;
+				if cod_status = 1 then raise EXC_SALIR; end if;
+            end if;
+        exception when no_data_found then
+            cod_status := 1;
+            msg_status := 'NO Se Encontro Numero de Revision Asociado a los Datos Ingresados';
+            raise EXC_SALIR;
+        end;
+        
+        if vl_pareo != 0 then
+            begin
+                update  JSYB_RCM_SALIDAS_PROC
+                    set ind_robo_camion = 'N'
+                where   lo_codigo = vl_local
+                    and codigo_empresa = vl_empresa
+                    and organization_id = vl_org_cd
+                    and numero_salida = p_nro_salida;
+                
+                update  JSYB_RCM_BANDEJAS
+                    set estado = 'REV',
+                        fecha_rev_contenido = sysdate,
+                        usuario_rev_contenido = vl_usuario
+                where   lo_codigo = vl_local
+                    and codigo_empresa = vl_empresa
+                    and organization_id = vl_org_cd
+                    and numero_salida = p_nro_salida
+                    and codigo_bandeja = p_nro_bandeja;
+            exception when others then
+                cod_status := 1;
+                msg_status := 'NO Se Pudieron Actualizar Los Datos en Tablas Internas';
+                raise EXC_SALIR;
+            end;
+            
+            select  count(*) into cant_total
+            from    BANDEJAS
+            where   lo_codigo = vl_local
+                and numero = p_nro_salida
+                and organization_id = vl_org_cd;
+            
+            select  count(*) into cant_escan
+            from    JSYB_RCM_BANDEJAS
+            where   lo_codigo = vl_local
+                and codigo_empresa = vl_empresa
+                and organization_id = vl_org_cd
+                and numero_salida = p_nro_salida;
+            
+            --if faltan bandejas por escanear then
+            if cant_total-cant_escan > 0 then
+                cod_status := 3;
+                if vl_pareo = 1 then
+                    msg_status := 'Revision de Contenido Cerrada Exitosamente: Contenido Tuvo Pareo Con Detalle de Bandejas';
+                else
+                    msg_status := 'Revision de Contenido Cerrada Exitosamente: Contenido Tuvo Pareo Con Revision #'||vl_nro_rev;
+                end if;
+            --else if NO faltan bandejas por escanear then
+            else
+                begin
+                    update  JSYB_RCM_SALIDAS_PROC
+                        set estado = 'RCC',
+                            fecha_estado = sysdate,
+                            usuario_estado = vl_usuario
+                    where   lo_codigo = vl_local
+                        and codigo_empresa = vl_empresa
+                        and organization_id = vl_org_cd
+                        and numero_salida = p_nro_salida;
+                exception when others then
+                    cod_status := 1;
+                    msg_status := 'NO Se Pudieron Actualizar Los Datos en Tablas Internas';
+                    raise EXC_SALIR;
+                end;
+                cod_status := 3;
+                msg_status := 'Recepcion Ciega Finalizada Exitosamente';
+            end if;
+        else
+            msg_status := 'Revision de Contenido Cerrada Exitosamente: Sin Pareo';
+        end if;
+        commit;
+    exception when EXC_SALIR then ROLLBACK;
+    when no_data_found then
+        cod_status := 1;
+        msg_status := 'Conexion NO Existe';
+        ROLLBACK;
+    when others then
+        cod_status := 1;
+        msg_status := substr(sqlerrm,1,240);
+        ROLLBACK;
+    end RevisaContenido;
+end RECEP_CIEGA_MOVIL_PKG;
