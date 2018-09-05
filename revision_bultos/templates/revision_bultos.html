@@ -128,7 +128,7 @@
 		};
 		
 		$(function(){
-			$('#modalAdvertencia').modal({ show: false})
+			$('#modalAdvertencia').modal({ show: false});
 			ReiniciarFormulario();
 			
 			if ({{contexto.cod_status}} == 0){
@@ -137,10 +137,10 @@
 				document.getElementById("InputFecha").readOnly = true;
 				document.getElementById("InputSalida").readOnly = true;
 				document.getElementById("InputComentario").readOnly = true;
-				setModalAdvertencia("Error de Contexto:","Mensaje: "+{{contexto.msg_status}}+"\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+				setModalAdvertencia("Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}else if({{contexto.cod_status}} == 3){
 				$("#InputFecha").focus();
-				setModalAdvertencia("Éxito de Contexto:","Mensaje: "+{{contexto.msg_status}});
+				setModalAdvertencia("Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
 			}else {
 				document.getElementById("InputFecha").readOnly = true;
 				document.getElementById("InputSalida").readOnly = true;

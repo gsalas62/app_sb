@@ -54,19 +54,17 @@
 		};
 		
 		$(function(){
-			$('#modalAdvertencia').modal({ show: false})
-			document.getElementById("InputBandeja").readOnly = true;
-			document.getElementById("InputProducto").readOnly = true;
-			document.getElementById("InputComentario").readOnly = true;
-			document.getElementById("TermRevCont").disabled = true;
+			$('#modalAdvertencia').modal({ show: false});
+			ReiniciarFormulario();
 			
-			if ({{contexto.cod_status}} == 1){
-				document.getElementById("InputSalida").readOnly = true;
-				//setModalAdvertencia("Error de Contexto:","Mensaje: "+{{contexto.msg_status}}+"\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
-				//alert("Error de Contexto:\nMensaje: "+{{contexto.msg_status}}+"\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
-			}else if({{contexto.cod_status}} == 0){
+			if ({{contexto.cod_status}} == 0){
 				$("#InputSalida").focus();
-				//setModalAdvertencia("Exito de Contexto:","Mensaje: "+{{contexto.msg_status}});
+			}else if({{contexto.cod_status}} == 1){
+				document.getElementById("InputSalida").readOnly = true;
+				setModalAdvertencia("Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+			}else if({{contexto.cod_status}} == 3){
+				$("#InputSalida").focus();
+				setModalAdvertencia("Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
 			}else {
 				document.getElementById("InputSalida").readOnly = true;
 				setModalAdvertencia("Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
