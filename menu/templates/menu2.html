@@ -140,8 +140,14 @@
 		$(function(){
 			$('#modalAdvertencia').modal({ show: false})
 			if ({{contexto.cod_status}} == 1){
-				//setModalAdvertencia("Error de Contexto:","Mensaje: "+{{contexto.msg_status}});
-				//alert("Error de Contexto:\nMensaje: "+{{contexto.cod_status}});
+				document.getElementById("menu-toggle").disabled = true;
+				//setModalAdvertencia("Error de Contexto:","Mensaje: "+{{contexto.msg_status}}+"\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+				//alert("Error de Contexto:\nMensaje: "+{{contexto.cod_status}}+"\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+			}else if({{contexto.cod_status}} == 0){
+				//setModalAdvertencia("Exito de Contexto:","Mensaje: "+{{contexto.msg_status}});
+			}else {
+				document.getElementById("menu-toggle").disabled = true;
+				setModalAdvertencia("Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}
 		});
 		function setModalAdvertencia(title, mensaje){

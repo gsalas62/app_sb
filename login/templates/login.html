@@ -50,8 +50,9 @@
 		usando ajax al path /validar_login, donde se hará uso del servicio para validar o no las credenciales
 		*/ 
 		function validarLogin(){
-			user = $("#InputLogin").val();
-			password = $("#InputPassword").val();
+			user = document.getElementById("InputLogin").value.toUpperCase();
+			password = document.getElementById("InputPassword").value.toUpperCase();
+			//password = $("#InputPassword").val();
 			/* TOKEN DE SEGURIDAD */
 			var csrf_token = "{{ csrf_token() }}";
 		    $.ajaxSetup({
