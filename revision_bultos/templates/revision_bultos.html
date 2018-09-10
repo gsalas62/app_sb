@@ -240,7 +240,7 @@
 {% endblock %}
 
 {% block screen_name %}
-	<h4 style="color: #1a8dff;">Revisión de Bultos</h4>
+	<h4 class="titulo_pag">Revisión de Bultos</h4>
 {% endblock %}
 
 {% block info_contexto %}
@@ -255,31 +255,6 @@
 {% endblock %}
 
 {% block field_container %}
-	<!-- div del gif con el loader, parte hidden -->
-	<div id="loader" style="display: none;">
-		<center> <img src="{{url_for('static',filename='img/ajax-loader.gif')}}"> </center>
-	</div>
-
-	<!-- Modal -->
-	<div class="modal" id="modalAdvertencia" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
-		<div class="modal-dialog modal-dialog-centered" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="modalAdvertenciaTitle">TITULO</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<p id="modalAdvertenciaMensaje">MENSAJE</p>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
 	<!-- contenedor de campos -->
 	<div class="row" id="baserow">
 		<div class="col" id="fieldscol">
