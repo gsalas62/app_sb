@@ -25,7 +25,7 @@
 			var campo = document.getElementById(id).value;
 			var letra = "";
 			if (campo.length < 16) {
-				setModalAdvertencia("Error al Validar Fecha:","Mensaje: "+nomb+", NO Tiene el Formato Correcto: 'DD-MM-YYYY 24HH:Mi:SS'");
+				setModalAdvertencia("Error al Validar Fecha:","Mensaje: "+nomb+", NO Tiene el Formato Correcto: 'DD-MM-YYYY HH:Mi (24HH/AM-PM)'");
 				letra = nomb+": "+campo.length;
 			}
 			return letra;
