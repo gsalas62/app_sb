@@ -36,7 +36,7 @@ def getInfoContexto(id_conn):
 
 	return myDict
 	
-def RegistraSalida(id_conn, nro_salida, rev_todo, fch_llegada, glosa):
+def RegistraSalida(id_conn, nro_salida, rev_todo, hora_llegada):
 	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_RegistraSalida/bp_registrasalida_client_ep?WSDL"
 	headers = {'content-type': 'text/xml'}
 	body = 	"""	<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -45,8 +45,7 @@ def RegistraSalida(id_conn, nro_salida, rev_todo, fch_llegada, glosa):
 								<ns1:ID_Conn>"""+str(id_conn)+"""</ns1:ID_Conn>
 								<ns1:Nro_Salida>"""+str(nro_salida)+"""</ns1:Nro_Salida>
 								<ns1:Rev_Todo>"""+str(rev_todo)+"""</ns1:Rev_Todo>
-								<ns1:Fch_Llegada>"""+str(fch_llegada)+"""</ns1:Fch_Llegada>
-								<ns1:Glosa>"""+str(glosa)+"""</ns1:Glosa>
+								<ns1:Hora_Llegada>"""+str(hora_llegada)+"""</ns1:Hora_Llegada>
 						</ns1:ParEntrada>
 					</soap:Body>
 				</soap:Envelope>"""
@@ -66,7 +65,7 @@ def RegistraSalida(id_conn, nro_salida, rev_todo, fch_llegada, glosa):
 	
 	return cod_status, msg_status
 	
-def RegistraBandeja(id_conn, nro_salida, nro_bandeja, glosa):
+def RegistraBandeja(id_conn, nro_salida, bandeja_pub):
 	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_RegistraBandeja/bp_registrabandeja_client_ep?WSDL"
 	headers = {'content-type': 'text/xml'}
 	body = 	"""	<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -74,8 +73,7 @@ def RegistraBandeja(id_conn, nro_salida, nro_bandeja, glosa):
 						<ns1:ParEntrada xmlns:ns1="http://www.Sqm_RegistraBandeja.org">
 								<ns1:ID_Conn>"""+str(id_conn)+"""</ns1:ID_Conn>
 								<ns1:Nro_Salida>"""+str(nro_salida)+"""</ns1:Nro_Salida>
-								<ns1:Nro_Bandeja>"""+str(nro_bandeja)+"""</ns1:Nro_Bandeja>
-								<ns1:Glosa>"""+str(glosa)+"""</ns1:Glosa>
+								<ns1:Bandeja_Pub>"""+str(bandeja_pub)+"""</ns1:Bandeja_Pub>
 						</ns1:ParEntrada>
 					</soap:Body>
 				</soap:Envelope>"""
@@ -124,7 +122,7 @@ def ValidaSalida(id_conn, nro_salida):
 	
 	return cod_status, msg_status
 	
-def ValidaBandeja(id_conn, nro_salida, nro_bandeja):
+def ValidaBandeja(id_conn, nro_salida, bandeja_pub):
 	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_ValidaBandeja/bp_validabandeja_client_ep?WSDL"
 	headers = {'content-type': 'text/xml'}
 	body = 	"""	<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -132,7 +130,7 @@ def ValidaBandeja(id_conn, nro_salida, nro_bandeja):
 						<ns1:ParEntrada xmlns:ns1="http://www.Sqm_ValidaBandeja.org">
 								<ns1:ID_Conn>"""+str(id_conn)+"""</ns1:ID_Conn>
 								<ns1:Nro_Salida>"""+str(nro_salida)+"""</ns1:Nro_Salida>
-								<ns1:Nro_Bandeja>"""+str(nro_bandeja)+"""</ns1:Nro_Bandeja>
+								<ns1:Bandeja_Pub>"""+str(bandeja_pub)+"""</ns1:Bandeja_Pub>
 						</ns1:ParEntrada>
 					</soap:Body>
 				</soap:Envelope>"""
@@ -152,7 +150,7 @@ def ValidaBandeja(id_conn, nro_salida, nro_bandeja):
 	
 	return cod_status, msg_status
 	
-def RegistraProducto(id_conn, nro_salida, nro_bandeja, cod_ingresado):
+def RegistraProducto(id_conn, nro_salida, bandeja_pub, cod_ingresado):
 	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_RegistraProducto/bp_registraproducto_client_ep?WSDL"
 	headers = {'content-type': 'text/xml'}
 	body = 	"""	<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -160,7 +158,7 @@ def RegistraProducto(id_conn, nro_salida, nro_bandeja, cod_ingresado):
 						<ns1:ParEntrada xmlns:ns1="http://www.Sqm_RegistraProducto.org">
 								<ns1:ID_Conn>"""+str(id_conn)+"""</ns1:ID_Conn>
 								<ns1:Nro_Salida>"""+str(nro_salida)+"""</ns1:Nro_Salida>
-								<ns1:Nro_Bandeja>"""+str(nro_bandeja)+"""</ns1:Nro_Bandeja>
+								<ns1:Bandeja_Pub>"""+str(bandeja_pub)+"""</ns1:Bandeja_Pub>
 								<ns1:Cod_Ingresado>"""+str(cod_ingresado)+"""</ns1:Cod_Ingresado>
 						</ns1:ParEntrada>
 					</soap:Body>
@@ -244,7 +242,7 @@ def CamionRobado(id_conn, nro_salida):
 	
 	return link_boucher, cod_status, msg_status
 	
-def RevisaContenido(id_conn, nro_salida, nro_bandeja, glosa):
+def RevisaContenido(id_conn, nro_salida, bandeja_pub, glosa):
 	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_RevisaContenido/bp_revisacontenido_client_ep?WSDL"
 	headers = {'content-type': 'text/xml'}
 	body = 	"""	<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -252,7 +250,7 @@ def RevisaContenido(id_conn, nro_salida, nro_bandeja, glosa):
 						<ns1:ParEntrada xmlns:ns1="http://www.Sqm_RevisaContenido.org">
 								<ns1:ID_Conn>"""+str(id_conn)+"""</ns1:ID_Conn>
 								<ns1:Nro_Salida>"""+str(nro_salida)+"""</ns1:Nro_Salida>
-								<ns1:Nro_Bandeja>"""+str(nro_bandeja)+"""</ns1:Nro_Bandeja>
+								<ns1:Bandeja_Pub>"""+str(bandeja_pub)+"""</ns1:Bandeja_Pub>
 								<ns1:Glosa>"""+str(glosa)+"""</ns1:Glosa>
 						</ns1:ParEntrada>
 					</soap:Body>

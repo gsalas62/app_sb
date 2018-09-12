@@ -30,6 +30,28 @@
 			}
 			return letra;
 		};
+		function validar_hora(id,nomb){
+			var campo = document.getElementById(id).value;
+			var letra = "";
+			if (campo.length < 5) {
+				setModalAdvertencia("Error al Validar Hora:","Mensaje: "+nomb+", NO Tiene el Formato Correcto: 'HH:Mi (24HH/AM-PM)'");
+				letra = nomb+": "+campo.length;
+			}
+			return letra;
+		};
+		function validar_number(id,nomb){
+			var lista = ['1','2','3','4','5','6','7','8','9','0'];
+			var campo = document.getElementById(id).value;
+			var letra = "";
+			for (x in campo) {
+				if(!(lista.indexOf(campo[x]) > -1)){
+					setModalAdvertencia("Error al Validar Number:","Mensaje: "+nomb+", Tiene Caracteres NO Válidos: '"+campo[x]+"'");
+					letra = nomb+": "+campo[x];
+					break;
+				}
+			}
+			return letra;
+		};
 		function validar_texto(id,nomb){
 			var lista = ['a','A','b','B','c','C','d','D','e','E','f','F','g','G','h','H','i','I','j','J','k','K','l','L',
 			'm','M','n','N','o','O','p','P','q','Q','r','R','s','S','t','T','u','U','v','V','w','W','x','X','y','Y','z','Z',
@@ -49,20 +71,18 @@
 		function imprimir_boucher(link_boucher){
 			titulo = "Éxito "+titulo;
 			mens = "Se Abrirá una Nueva Ventana con el Boucher Para Ser Impreso";
-			setModalAdvertencia(titulo,"Mensaje: "+mens);
 			window.open(link_boucher);
+			setModalAdvertencia(titulo,"Mensaje: "+mens);
 		};
 		
 		function ReiniciarFormulario(){
 			document.getElementById("InputRevisar").value = 0;
-			document.getElementById("InputFecha").value = "";
-			document.getElementById("InputComentario").value = "";
+			document.getElementById("InputHora").value = "";
 			document.getElementById("InputSalida").value = "";
 			document.getElementById("InputBandeja").value = "";
 			document.getElementById("ReadCantidad").value = "";
-			document.getElementById("textGlosa").innerHTML= 'Glosa Salida:';
-			document.getElementById("InputFecha").readOnly = false;
-			document.getElementById("InputComentario").readOnly = false;
+			document.getElementById("InputRevisar").readOnly = false;
+			document.getElementById("InputHora").readOnly = false;
 			document.getElementById("InputSalida").readOnly = false;
 			document.getElementById("InputBandeja").readOnly = true;
 			document.getElementById("CamionRobado").disabled = true;
@@ -70,9 +90,8 @@
 		};
 		
 		function correcto_RegSalida(){
-			document.getElementById("InputComentario").value = "";
-			document.getElementById("textGlosa").innerHTML = 'Glosa Bandeja:';
-			document.getElementById("InputFecha").readOnly = true;
+			document.getElementById("InputRevisar").readOnly = true;
+			document.getElementById("InputHora").readOnly = true;
 			document.getElementById("InputSalida").readOnly = true;
 			document.getElementById("InputBandeja").readOnly = false;
 			document.getElementById("CamionRobado").disabled = false;
@@ -80,7 +99,6 @@
 		
 		function correcto_RegBandeja(cant_bandejas){
 			document.getElementById("InputBandeja").value = "";
-			document.getElementById("textGlosa").innerHTML= 'Glosa Bandeja:';
 			document.getElementById("ReadCantidad").value = cant_bandejas;
 			document.getElementById("CamionRobado").disabled = true;
 			document.getElementById("TermRevBultos").disabled = false;
@@ -122,7 +140,7 @@
 					}
 				}else if(data.cod_status == 3){
 					correcto_RevBulto(data.link_boucher);
-					setModalAdvertencia("Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
+					/* ****setModalAdvertencia("Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);*/
 				}else setModalAdvertencia("Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
 			});
 		};
@@ -132,37 +150,34 @@
 			ReiniciarFormulario();
 			
 			if ({{contexto.cod_status}} == 0){
-				$("#InputFecha").focus();
+				$("#InputHora").focus();
 			}else if({{contexto.cod_status}} == 1){
-				document.getElementById("InputFecha").readOnly = true;
+				document.getElementById("InputHora").readOnly = true;
 				document.getElementById("InputSalida").readOnly = true;
-				document.getElementById("InputComentario").readOnly = true;
 				setModalAdvertencia("Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}else if({{contexto.cod_status}} == 3){
-				$("#InputFecha").focus();
+				$("#InputHora").focus();
 				setModalAdvertencia("Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
 			}else {
-				document.getElementById("InputFecha").readOnly = true;
+				document.getElementById("InputHora").readOnly = true;
 				document.getElementById("InputSalida").readOnly = true;
-				document.getElementById("InputComentario").readOnly = true;
 				setModalAdvertencia("Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}
 			
 			$('#InputSalida').keypress(function(event) {
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				if (keycode == 13 & document.getElementById("InputSalida").value.length > 0) {
-					var fecha = validar_fecha("InputFecha", "Fecha Llegada");
-					var texto = validar_texto("InputComentario", "Glosa Salida");
-					if (fecha.length > 0) document.getElementById("InputFecha").value = "";
-					else if (texto.length > 0) document.getElementById("InputComentario").value = "";
+					var hora = validar_hora("InputHora", "Hora Llegada");
+					var salida = validar_number("InputSalida", "Salida");
+					if (hora.length > 0) document.getElementById("InputHora").value = "";
+					else if (salida.length > 0) document.getElementById("InputSalida").value = "";
 					else{
 						console.log($(this).val());
 						console.log($SCRIPT_ROOT);
 						$.getJSON($SCRIPT_ROOT + '/registrasalida',{
 							nro_salida: $("#InputSalida").val(),
 							rev_todo: $("#InputRevisar").val(),
-							fch_llegada: $("#InputFecha").val(),
-							glosa: $("#InputComentario").val()
+							hora_llegada: $("#InputHora").val()
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
@@ -182,15 +197,14 @@
 			$('#InputBandeja').keypress(function(event) {
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				if (keycode == 13 & document.getElementById("InputBandeja").value.length > 0) {
-					var texto = validar_texto("InputComentario", "Glosa Bandeja");
-					if (texto.length > 0) document.getElementById("InputComentario").value = "";
+					var bandeja = validar_texto("InputBandeja", "Bandeja");
+					if (bandeja.length > 0) document.getElementById("InputBandeja").value = "";
 					else {
 						console.log($(this).val());
 						console.log($SCRIPT_ROOT);
 						$.getJSON($SCRIPT_ROOT + '/registrabandeja',{
 							nro_salida: $("#InputSalida").val(),
-							nro_bandeja: $("#InputBandeja").val(),
-							glosa: $("#InputComentario").val()
+							bandeja_pub: $("#InputBandeja").val()
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
@@ -271,18 +285,10 @@
 					<!--<div class="row" style="display:none;">-->
 					<div class="row">
 						<div class="col-5">
-							<label>Fecha Llegada:</label>
+							<label>Hora Llegada:</label>
 						</div>
 						<div class="col-7">
-							<input type="datetime-local" class="form-control" id="InputFecha" style='font-size:14px;padding:.100rem .45rem'>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-5">
-							<label id="textGlosa"></label>
-						</div>
-						<div class="col-7">
-							<textarea rows="2" maxlength='240' class="form-control" id="InputComentario"></textarea>
+							<input type="time" class="form-control" id="InputHora" style='font-size:14px;padding:.100rem .45rem'>
 						</div>
 					</div>
 					<div class="row">
@@ -290,7 +296,7 @@
 							<label>Salida:</label>
 						</div>
 						<div class="col-7">
-							<input type="number" class="form-control" id="InputSalida">
+							<input type="text" class="form-control" id="InputSalida">
 						</div>
 					</div>
 					<div class="row">
@@ -298,7 +304,7 @@
 							<label>Bandeja:</label>
 						</div>
 						<div class="col-7">
-							<input type="number" class="form-control" id="InputBandeja">
+							<input type="text" class="form-control" id="InputBandeja">
 						</div>
 					</div>
 					<div class="row">

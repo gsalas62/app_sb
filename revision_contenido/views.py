@@ -37,9 +37,9 @@ def valida_bandeja():
 		return redirect('login')
 	
 	nro_salida = request.args.get('nro_salida', 0, type=int)
-	nro_bandeja = request.args.get('nro_bandeja', 0, type=int)
+	bandeja_pub = request.args.get('bandeja_pub', 0, type=str)
 	
-	cod_status, msg_status = global_modulos.ValidaBandeja(id_conn, nro_salida, nro_bandeja)
+	cod_status, msg_status = global_modulos.ValidaBandeja(id_conn, nro_salida, bandeja_pub)
 	return jsonify(cod_status=cod_status, msg_status=msg_status)
 	
 #servicio que llama al RegistraProducto
@@ -50,10 +50,10 @@ def registra_producto():
 		return redirect('login')
 	
 	nro_salida = request.args.get('nro_salida', 0, type=int)
-	nro_bandeja = request.args.get('nro_bandeja', 0, type=int)
+	bandeja_pub = request.args.get('bandeja_pub', 0, type=str)
 	cod_ingresado = request.args.get('cod_ingresado', 0, type=str)
 	
-	cantidad, descripcion, cod_status, msg_status = global_modulos.RegistraProducto(id_conn, nro_salida, nro_bandeja, cod_ingresado)
+	cantidad, descripcion, cod_status, msg_status = global_modulos.RegistraProducto(id_conn, nro_salida, bandeja_pub, cod_ingresado)
 	return jsonify(cantidad=cantidad, descripcion=descripcion, cod_status=cod_status, msg_status=msg_status)
 	
 #servicio que llama al RevisaContenido
@@ -64,8 +64,8 @@ def revisa_contenido():
 		return redirect('login')
 	
 	nro_salida = request.args.get('nro_salida', 0, type=int)
-	nro_bandeja = request.args.get('nro_bandeja', 0, type=int)
+	bandeja_pub = request.args.get('bandeja_pub', 0, type=str)
 	glosa = request.args.get('glosa', 0, type=str)
 	
-	cod_status, msg_status = global_modulos.RevisaContenido(id_conn, nro_salida, nro_bandeja, glosa)
+	cod_status, msg_status = global_modulos.RevisaContenido(id_conn, nro_salida, bandeja_pub, glosa)
 	return jsonify(cod_status=cod_status, msg_status=msg_status)

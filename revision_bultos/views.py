@@ -28,10 +28,9 @@ def registra_salida():
 	
 	nro_salida = request.args.get('nro_salida', 0, type=int)
 	rev_todo = request.args.get('rev_todo', 0, type=int)
-	fch_llegada = request.args.get('fch_llegada', 0, type=str)#'2018-08-13T12:20:32'
-	glosa = request.args.get('glosa', 0, type=str)#'Algun Commentario Serv'
+	hora_llegada = request.args.get('hora_llegada', 0, type=str)
 	
-	cod_status, msg_status = global_modulos.RegistraSalida(id_conn, nro_salida, rev_todo, fch_llegada, glosa)
+	cod_status, msg_status = global_modulos.RegistraSalida(id_conn, nro_salida, rev_todo, hora_llegada)
 	return jsonify(cod_status=cod_status, msg_status=msg_status)
 	
 #servicio que llama al RegistraBandeja
@@ -42,10 +41,9 @@ def registra_bandeja():
 		return redirect('login')
 	
 	nro_salida = request.args.get('nro_salida', 0, type=int)
-	nro_bandeja = request.args.get('nro_bandeja', 0, type=int)
-	glosa = request.args.get('glosa', 0, type=str)
+	bandeja_pub = request.args.get('bandeja_pub', 0, type=str)
 	
-	cant_bandejas, cod_status, msg_status = global_modulos.RegistraBandeja(id_conn, nro_salida, nro_bandeja, glosa)
+	cant_bandejas, cod_status, msg_status = global_modulos.RegistraBandeja(id_conn, nro_salida, bandeja_pub)
 	return jsonify(cant_bandejas=cant_bandejas, cod_status=cod_status, msg_status=msg_status)
 	
 #servicio que llama al RevisaBultos
