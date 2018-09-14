@@ -35,10 +35,10 @@
 			
 			$("#IngresarLogin").bind('click', function(event){
 				if ($("#InputUsuario").val().length <= 0){
-					setModalAdvertencia("Error Al Validar Datos:","Mensaje: Usuario NO Puede Estar Nulo");
+					setModalAdvertencia("Error","Error Al Validar Datos:","Mensaje: Usuario NO Puede Estar Nulo");
 					$("#InputUsuario").focus();
 				}else if ($("#InputPassword").val().length <= 0){
-					setModalAdvertencia("Error Al Validar Datos:","Mensaje: Contraseña NO Puede Estar Nula");
+					setModalAdvertencia("Error","Error Al Validar Datos:","Mensaje: Contraseña NO Puede Estar Nula");
 					$("#InputPassword").focus();
 				}else{
 					var usuario = validar_texto("InputUsuario", "Usuario");
@@ -116,7 +116,7 @@
 					Se pone el focus en el usuario	
 					*/
 					if(obj['cod_status'] == 1){
-						setModalAdvertencia("Error Al Validar Datos:","Mensaje: "+obj['msg_status']);
+						setModalAdvertencia("Error","Error Al Validar Datos:","Mensaje: "+obj['msg_status']);
 						$("#InputUsuario").val('');
 						$("#InputPassword").val('');
 						$("#InputUsuario").focus();
@@ -127,7 +127,7 @@
 				ejemplo: cuando el servicio está abajo, no hay conexión a internet 
 				*/
 				error: function(XMLHttpRequest, textStatus, errorThrown) { 
-					setModalAdvertencia("Status: "+textStatus,"Error: "+errorThrown);
+					setModalAdvertencia("Error","Status: "+textStatus,"Error: "+errorThrown);
 				}
 			});
 			// Buenas prácticas recomendaban retorntar this, ni idea porqué. 
