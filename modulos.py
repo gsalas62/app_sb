@@ -200,18 +200,18 @@ def RevisaBultos(id_conn, nro_salida, respuesta):
 	soup = BeautifulSoup(str(response.content), "html.parser")
 	
 	# Estos datos son por defecto
-	link_boucher = ""
+	link_voucher = ""
 	cod_status = 5
 	msg_status = ""
 	
 	# Esto es para verificar que efectivamente le llegó un cod_status
 	res = soup.find_all('cod_status')
 	if len(res) > 0:
-		link_boucher = soup.find('link_boucher').get_text()
+		link_voucher = soup.find('link_voucher').get_text()
 		cod_status = soup.find('cod_status').get_text()
 		msg_status = soup.find('msg_status').get_text()
 	
-	return link_boucher, cod_status, msg_status
+	return link_voucher, cod_status, msg_status
 	
 def CamionRobado(id_conn, nro_salida):
 	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_CamionRobado/bp_camionrobado_client_ep?WSDL"
@@ -229,18 +229,18 @@ def CamionRobado(id_conn, nro_salida):
 	soup = BeautifulSoup(str(response.content), "html.parser")
 	
 	# Estos datos son por defecto
-	link_boucher = ""
+	link_voucher = ""
 	cod_status = 5
 	msg_status = ""
 	
 	# Esto es para verificar que efectivamente le llegó un cod_status
 	res = soup.find_all('cod_status')
 	if len(res) > 0:
-		link_boucher = soup.find('link_boucher').get_text()
+		link_voucher = soup.find('link_voucher').get_text()
 		cod_status = soup.find('cod_status').get_text()
 		msg_status = soup.find('msg_status').get_text()
 	
-	return link_boucher, cod_status, msg_status
+	return link_voucher, cod_status, msg_status
 	
 def RevisaContenido(id_conn, nro_salida, bandeja_pub, glosa):
 	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_RevisaContenido/bp_revisacontenido_client_ep?WSDL"

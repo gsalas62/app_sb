@@ -13,9 +13,9 @@
 		$(function(){
 			$('#modalAdvertencia').modal({ show: false})
 			// Cuando se carga la página se pone como focus el input del login
-			$("#InputLogin").focus();
+			$("#InputUsuario").focus();
 
-			$("#InputLogin").keypress(function(event) {
+			$("#InputUsuario").keypress(function(event) {
 				// Detecta además del keycode de un teclado físico, el keycode del teclado de android
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				// Si es 'enter' y el largo es > 0 pasa el focus al input del password (equivalente al tab)
@@ -34,23 +34,25 @@
 			});
 			
 			$("#IngresarLogin").bind('click', function(event){
-				if ($("#InputLogin").val().length <= 0){
+				if ($("#InputUsuario").val().length <= 0){
 					setModalAdvertencia("Error Al Validar Datos:","Mensaje: Usuario NO Puede Estar Nulo");
-					$("#InputLogin").focus();
+					$("#InputUsuario").focus();
 				}else if ($("#InputPassword").val().length <= 0){
 					setModalAdvertencia("Error Al Validar Datos:","Mensaje: Contraseña NO Puede Estar Nula");
 					$("#InputPassword").focus();
 				}else{
-					validarLogin();
+					var usuario = validar_texto("InputUsuario", "Usuario");
+					if (usuario.length > 0) document.getElementById("InputUsuario").value = "";
+					else validarLogin();
 				}
 			});
 		});
 		/*
-		Función que toma los valores de los input '#InputLogin' y '#InputPassword' y los envía
+		Función que toma los valores de los input '#InputUsuario' y '#InputPassword' y los envía
 		usando ajax al path /validar_login, donde se hará uso del servicio para validar o no las credenciales
 		*/ 
 		function validarLogin(){
-			user = document.getElementById("InputLogin").value.toUpperCase();
+			user = document.getElementById("InputUsuario").value.toUpperCase();
 			password = document.getElementById("InputPassword").value.toUpperCase();
 			//password = $("#InputPassword").val();
 			/* TOKEN DE SEGURIDAD */
@@ -87,7 +89,7 @@
 				complete: function(){
 					$("#loader").hide();
 					$("#fieldscol").show();
-					$("#InputLogin").focus();
+					$("#InputUsuario").focus();
 				},
 				/* Si es que json devuelve algo */
 				success: function(result) {
@@ -115,9 +117,9 @@
 					*/
 					if(obj['cod_status'] == 1){
 						setModalAdvertencia("Error Al Validar Datos:","Mensaje: "+obj['msg_status']);
-						$("#InputLogin").val('');
+						$("#InputUsuario").val('');
 						$("#InputPassword").val('');
-						$("#InputLogin").focus();
+						$("#InputUsuario").focus();
 					}
 				},
 				/*
@@ -131,15 +133,6 @@
 			// Buenas prácticas recomendaban retorntar this, ni idea porqué. 
 			return this;
 		};
-		/*
-		Función que cambia los atributos al modal de advertencia (sólo con un botón de cerrar)
-		con el título y mensaje ingresados como argumento y luego lo muestra.
-		*/
-		function setModalAdvertencia(title, mensaje){
-			$("#modalAdvertenciaTitle").text(title);
-			$("#modalAdvertenciaMensaje").text(mensaje);
-			$("#modalAdvertencia").modal('show');
-		};
 	</script>
 {% endblock %}
 
@@ -151,7 +144,7 @@
 		<meta name="csrf-token" content="{{ csrf_token() }}">
 	    <div class="form-group">
 	        <label for="logInput">Usuario:</label>
-	        <input type="text" class="form-control" id="InputLogin" autofocus>
+	        <input type="text" class="form-control" id="InputUsuario" autofocus>
 	    </div>
 	    <div class="form-group">
             <label for="passInput">Contraseña:</label>

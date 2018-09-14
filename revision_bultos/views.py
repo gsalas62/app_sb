@@ -56,8 +56,8 @@ def revisa_bultos():
 	nro_salida = request.args.get('nro_salida', 0, type=int)
 	respuesta = request.args.get('respuesta', 0, type=int)
 	
-	link_boucher, cod_status, msg_status = global_modulos.RevisaBultos(id_conn, nro_salida, respuesta)
-	return jsonify(link_boucher=link_boucher, cod_status=cod_status, msg_status=msg_status)
+	link_voucher, cod_status, msg_status = global_modulos.RevisaBultos(id_conn, nro_salida, respuesta)
+	return jsonify(link_voucher=link_voucher, cod_status=cod_status, msg_status=msg_status)
 	
 #servicio que llama al CamionRobado
 @revision_bultos.route('/camionrobado', methods=['GET'])
@@ -68,5 +68,5 @@ def camion_robado():
 	
 	nro_salida = request.args.get('nro_salida', 0, type=int)
 	
-	link_boucher, cod_status, msg_status = global_modulos.CamionRobado(id_conn, nro_salida)
-	return jsonify(link_boucher=link_boucher, cod_status=cod_status, msg_status=msg_status)
+	link_voucher, cod_status, msg_status = global_modulos.CamionRobado(id_conn, nro_salida)
+	return jsonify(link_voucher=link_voucher, cod_status=cod_status, msg_status=msg_status)

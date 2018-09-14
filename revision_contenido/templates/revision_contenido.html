@@ -9,57 +9,6 @@
 	<link rel="stylesheet" type="text/css" href="{{ url_for('revision_contenido.static', filename='css/revision_contenido.css') }}">
 	<script type="text/javascript">
 		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-		function setModalAdvertencia(title, mensaje){
-			$("#modalAdvertenciaTitle").text(title);
-			$("#modalAdvertenciaMensaje").text(mensaje);
-			$("#modalAdvertencia").modal('show');
-		};
-		function validar_fecha(id,nomb){
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			if (campo.length < 16) {
-				setModalAdvertencia("Error al Validar Fecha:","Mensaje: "+nomb+", NO Tiene el Formato Correcto: 'DD-MM-YYYY HH:Mi (24HH/AM-PM)'");
-				letra = nomb+": "+campo.length;
-			}
-			return letra;
-		};
-		function validar_hora(id,nomb){
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			if (campo.length < 5) {
-				setModalAdvertencia("Error al Validar Hora:","Mensaje: "+nomb+", NO Tiene el Formato Correcto: 'HH:Mi (24HH/AM-PM)'");
-				letra = nomb+": "+campo.length;
-			}
-			return letra;
-		};
-		function validar_number(id,nomb){
-			var lista = ['1','2','3','4','5','6','7','8','9','0'];
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			for (x in campo) {
-				if(!(lista.indexOf(campo[x]) > -1)){
-					setModalAdvertencia("Error al Validar Number:","Mensaje: "+nomb+", Tiene Caracteres NO Válidos: '"+campo[x]+"'");
-					letra = nomb+": "+campo[x];
-					break;
-				}
-			}
-			return letra;
-		};
-		function validar_texto(id,nomb){
-			var lista = ['a','A','b','B','c','C','d','D','e','E','f','F','g','G','h','H','i','I','j','J','k','K','l','L',
-			'm','M','n','N','o','O','p','P','q','Q','r','R','s','S','t','T','u','U','v','V','w','W','x','X','y','Y','z','Z',
-			'1','2','3','4','5','6','7','8','9','0','-','_','(',')','+','=',',',';','.',':','#',' ','\n'];
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			for (x in campo) {
-				if(!(lista.indexOf(campo[x]) > -1)){
-					setModalAdvertencia("Error al Validar Texto:","Mensaje: "+nomb+", Tiene Caracteres NO Válidos: '"+campo[x]+"'");
-					letra = nomb+": "+campo[x];
-					break;
-				}
-			}
-			return letra;
-		};
 		
 		function ReiniciarFormulario(){
 			document.getElementById("InputSalida").value = "";
@@ -83,13 +32,13 @@
 				$("#InputSalida").focus();
 			}else if({{contexto.cod_status}} == 1){
 				document.getElementById("InputSalida").readOnly = true;
-				setModalAdvertencia("Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+				setModalAdvertencia("Error","Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}else if({{contexto.cod_status}} == 3){
 				$("#InputSalida").focus();
-				setModalAdvertencia("Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
+				setModalAdvertencia("Mensaje","Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
 			}else {
 				document.getElementById("InputSalida").readOnly = true;
-				setModalAdvertencia("Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+				setModalAdvertencia("Error","Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}
 			
 			$('#InputSalida').keypress(function(event) {
@@ -106,11 +55,11 @@
 							console.log(data);
 							if(data.cod_status == 1){
 								document.getElementById("InputSalida").value = "";
-								setModalAdvertencia("Error Al Validar Salida:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Error","Error Al Validar Salida:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 0){
 								document.getElementById("InputSalida").readOnly = true;
 								document.getElementById("InputBandeja").readOnly = false;
-							}else setModalAdvertencia("Error Al Validar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}else setModalAdvertencia("Error","Error Al Validar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
 						});
 					}
 				}
@@ -131,12 +80,12 @@
 							console.log(data);
 							if(data.cod_status == 1){
 								document.getElementById("InputBandeja").value = "";
-								setModalAdvertencia("Error Al Validar Bandeja:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Error","Error Al Validar Bandeja:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 0){
 								document.getElementById("InputBandeja").readOnly = true;
 								document.getElementById("InputProducto").readOnly = false;
 								document.getElementById("InputComentario").readOnly = false;
-							}else setModalAdvertencia("Error Al Validar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}else setModalAdvertencia("Error","Error Al Validar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
 						});
 					}
 				}
@@ -160,14 +109,14 @@
 								document.getElementById("InputProducto").value = "";
 								document.getElementById("ReadCantidad").value = "";
 								document.getElementById("ReadDescripcion").value = "";
-								setModalAdvertencia("Error Al Registrar Producto:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Error","Error Al Registrar Producto:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 0){
 								document.getElementById("InputProducto").value = "";
 								document.getElementById("InputComentario").readOnly = false;
 								document.getElementById("TermRevCont").disabled = false;
 								document.getElementById("ReadCantidad").value = data.cantidad;
 								document.getElementById("ReadDescripcion").value = data.descripcion;
-							}else setModalAdvertencia("Error Al Registrar Producto:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}else setModalAdvertencia("Error","Error Al Registrar Producto:","Mensaje: NO HAY DATOS DE VUELTA.");
 						});
 					}
 				}
@@ -196,13 +145,13 @@
 								document.getElementById("InputProducto").readOnly = true;
 								document.getElementById("InputComentario").readOnly = true;
 								document.getElementById("TermRevCont").disabled = true;
-								setModalAdvertencia("Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 1){
-								setModalAdvertencia("Error Al Terminar Revision:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
 								ReiniciarFormulario();
-								setModalAdvertencia("Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
-							}else setModalAdvertencia("Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
+								setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
+							}else setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
 						});
 					}
 				}
@@ -237,7 +186,7 @@
                             <label>Salida:</label>
                         </div>
                         <div class="col">
-                            <input type="number" class="form-control" id="InputSalida">
+                            <input type="text" class="form-control" id="InputSalida">
                         </div>
                     </div>
                     <div class="row">

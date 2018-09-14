@@ -10,69 +10,18 @@
 	<script type="text/javascript">
 		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 		var resp = 0; var titulo = ""; var mens = "";
-		function setModalAdvertencia(title, mensaje){
-			$("#modalAdvertenciaTitle").text(title);
-			$("#modalAdvertenciaMensaje").text(mensaje);
-			$("#modalAdvertencia").modal('show');
-		};
+		
 		function onClickRevisar(){
 			if (document.getElementById("InputRevisar").checked == true){
 				document.getElementById("InputRevisar").value = 1;
 			}else document.getElementById("InputRevisar").value = 0;
 		};
 		
-		function validar_fecha(id,nomb){
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			if (campo.length < 16) {
-				setModalAdvertencia("Error al Validar Fecha:","Mensaje: "+nomb+", NO Tiene el Formato Correcto: 'DD-MM-YYYY HH:Mi (24HH/AM-PM)'");
-				letra = nomb+": "+campo.length;
-			}
-			return letra;
-		};
-		function validar_hora(id,nomb){
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			if (campo.length < 5) {
-				setModalAdvertencia("Error al Validar Hora:","Mensaje: "+nomb+", NO Tiene el Formato Correcto: 'HH:Mi (24HH/AM-PM)'");
-				letra = nomb+": "+campo.length;
-			}
-			return letra;
-		};
-		function validar_number(id,nomb){
-			var lista = ['1','2','3','4','5','6','7','8','9','0'];
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			for (x in campo) {
-				if(!(lista.indexOf(campo[x]) > -1)){
-					setModalAdvertencia("Error al Validar Number:","Mensaje: "+nomb+", Tiene Caracteres NO Válidos: '"+campo[x]+"'");
-					letra = nomb+": "+campo[x];
-					break;
-				}
-			}
-			return letra;
-		};
-		function validar_texto(id,nomb){
-			var lista = ['a','A','b','B','c','C','d','D','e','E','f','F','g','G','h','H','i','I','j','J','k','K','l','L',
-			'm','M','n','N','o','O','p','P','q','Q','r','R','s','S','t','T','u','U','v','V','w','W','x','X','y','Y','z','Z',
-			'1','2','3','4','5','6','7','8','9','0','-','_','(',')','+','=',',',';','.',':','#',' ','\n'];
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			for (x in campo) {
-				if(!(lista.indexOf(campo[x]) > -1)){
-					setModalAdvertencia("Error al Validar Texto:","Mensaje: "+nomb+", Tiene Caracteres NO Válidos: '"+campo[x]+"'");
-					letra = nomb+": "+campo[x];
-					break;
-				}
-			}
-			return letra;
-		};
-		
-		function imprimir_boucher(link_boucher){
+		function imprimir_voucher(link_voucher){
 			titulo = "Éxito "+titulo;
-			mens = "Se Abrirá una Nueva Ventana con el Boucher Para Ser Impreso";
-			window.open(link_boucher);
-			setModalAdvertencia(titulo,"Mensaje: "+mens);
+			mens = "Se Abrirá una Nueva Ventana con el Voucher Para Ser Impreso";
+			setModalAdvertencia("Mensaje",titulo,"Mensaje: "+mens);
+			window.open(link_voucher);
 		};
 		
 		function ReiniciarFormulario(){
@@ -104,16 +53,16 @@
 			document.getElementById("TermRevBultos").disabled = false;
 		};
 		
-		function correcto_RevBulto(link_boucher){
+		function correcto_RevBulto(link_voucher){
 			titulo = "Al Terminar Revision:";
-			imprimir_boucher(link_boucher);
+			imprimir_voucher(link_voucher);
 			
 			ReiniciarFormulario();
 		};
 		
-		function correcto_AlertaRobo(link_boucher){
+		function correcto_AlertaRobo(link_voucher){
 			titulo = "Al Alertar Robo:";
-			imprimir_boucher(link_boucher);
+			imprimir_voucher(link_voucher);
 			
 			ReiniciarFormulario();
 		};
@@ -125,23 +74,24 @@
 			},	function(data){
 				console.log(data);
 				if(data.cod_status == 0){
-					correcto_RevBulto(data.link_boucher);
+					correcto_RevBulto(data.link_voucher);
 				}else if(data.cod_status == 1){
-					setModalAdvertencia("Error Al Terminar Revision:","Mensaje: "+data.msg_status);
+					setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: "+data.msg_status);
 				}else if(data.cod_status == 2){
+					ReproducirAlerta("Pregunta");
 					if(confirm(data.msg_status)){
 						resp = 1;
-						setModalAdvertencia("Éxito Al Terminar Revision:","Mensaje: Confirmado");
+						setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: Confirmado");
 						console.log($SCRIPT_ROOT);
 						ServRevBultos();
 					}else{
 						resp = 0;
-						setModalAdvertencia("Éxito Al Terminar Revision:","Mensaje: Continúe Escaneando");
+						setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: Continúe Escaneando");
 					}
 				}else if(data.cod_status == 3){
-					correcto_RevBulto(data.link_boucher);
-					/* ****setModalAdvertencia("Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);*/
-				}else setModalAdvertencia("Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
+					correcto_RevBulto(data.link_voucher);
+					////setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
+				}else setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
 			});
 		};
 		
@@ -154,14 +104,14 @@
 			}else if({{contexto.cod_status}} == 1){
 				document.getElementById("InputHora").readOnly = true;
 				document.getElementById("InputSalida").readOnly = true;
-				setModalAdvertencia("Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+				setModalAdvertencia("Error","Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}else if({{contexto.cod_status}} == 3){
 				$("#InputHora").focus();
-				setModalAdvertencia("Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
+				setModalAdvertencia("Mensaje","Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
 			}else {
 				document.getElementById("InputHora").readOnly = true;
 				document.getElementById("InputSalida").readOnly = true;
-				setModalAdvertencia("Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+				setModalAdvertencia("Error","Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}
 			
 			$('#InputSalida').keypress(function(event) {
@@ -172,23 +122,26 @@
 					if (hora.length > 0) document.getElementById("InputHora").value = "";
 					else if (salida.length > 0) document.getElementById("InputSalida").value = "";
 					else{
+						var f = new Date();
+						var fecha_hora = f.getDate()+"-"+(f.getMonth()+1)+"-"+f.getFullYear()+"T"+$("#InputHora").val();
+						//var fecha_hora = '1900-01-01T'+$("#InputHora").val();
 						console.log($(this).val());
 						console.log($SCRIPT_ROOT);
 						$.getJSON($SCRIPT_ROOT + '/registrasalida',{
 							nro_salida: $("#InputSalida").val(),
 							rev_todo: $("#InputRevisar").val(),
-							hora_llegada: $("#InputHora").val()
+							hora_llegada: fecha_hora
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
 								correcto_RegSalida();
 							}else if(data.cod_status == 1){
 								document.getElementById("InputSalida").value = "";
-								setModalAdvertencia("Error Al Registrar Salida:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Error","Error Al Registrar Salida:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
 								correcto_RegSalida();
-								setModalAdvertencia("Éxito Al Registrar Salida:","Mensaje: "+data.msg_status);
-							}else setModalAdvertencia("Error Al Registrar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
+								setModalAdvertencia("Mensaje","Éxito Al Registrar Salida:","Mensaje: "+data.msg_status);
+							}else setModalAdvertencia("Error","Error Al Registrar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
 						});
 					}
 				}
@@ -211,11 +164,11 @@
 								correcto_RegBandeja(data.cant_bandejas);
 							}else if(data.cod_status == 1){
 								document.getElementById("InputBandeja").value = "";
-								setModalAdvertencia("Error Al Registrar Bandeja:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Error","Error Al Registrar Bandeja:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
 								correcto_RegBandeja(data.cant_bandejas);
-								setModalAdvertencia("Éxito Al Registrar Bandeja:","Mensaje: "+data.msg_status);
-							}else setModalAdvertencia("Error Al Registrar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
+								setModalAdvertencia("Mensaje","Éxito Al Registrar Bandeja:","Mensaje: "+data.msg_status);
+							}else setModalAdvertencia("Error","Error Al Registrar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
 						});
 					}
 				}
@@ -230,13 +183,13 @@
 					},	function(data){
 						console.log(data);
 						if(data.cod_status == 0){
-							correcto_AlertaRobo(data.link_boucher);
+							correcto_AlertaRobo(data.link_voucher);
 						}else if(data.cod_status == 1){
-							setModalAdvertencia("Error Al Alertar Robo:","Mensaje: "+data.msg_status);
+							setModalAdvertencia("Error","Error Al Alertar Robo:","Mensaje: "+data.msg_status);
 						}else if(data.cod_status == 3){
-							correcto_AlertaRobo(data.link_boucher);
-							setModalAdvertencia("Éxito Al Alertar Robo:","Mensaje: "+data.msg_status);
-						}else setModalAdvertencia("Error Al Alertar Robo:","Mensaje: NO HAY DATOS DE VUELTA.");
+							correcto_AlertaRobo(data.link_voucher);
+							setModalAdvertencia("Mensaje","Éxito Al Alertar Robo:","Mensaje: "+data.msg_status);
+						}else setModalAdvertencia("Error","Error Al Alertar Robo:","Mensaje: NO HAY DATOS DE VUELTA.");
 					});
 				}
 			});
