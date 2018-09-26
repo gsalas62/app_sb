@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <!-- Pantalla haga resize dependiendo de la resolución del dispositvo -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,149 +19,87 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
     <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+    
 
-    <!-- CSS de la base: background color, img size, entre otros. -->   
+    <!-- CSS y JS de la base: background color, img size, entre otros. -->   
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
-
-	<script>
-		function ReproducirAlerta(e){
-			var rep = new Audio();
-			rep.src = "../static/sonidos/"+e+".mp3";
-			rep.play();
-		};
-		function setModalAdvertencia(type, title, mensaje){
-			ReproducirAlerta(type);
-			$("#modalAdvertenciaTitle").text(title);
-			$("#modalAdvertenciaMensaje").text(mensaje);
-			$("#modalAdvertencia").modal('show');
-		};
-		function validar_fecha(id,nomb){
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			if (campo.length < 16) {
-				setModalAdvertencia("Error","Error al Validar Fecha:","Mensaje: "+nomb+", NO Tiene el Formato Correcto: 'DD-MM-YYYY HH:Mi (24HH/AM-PM)'");
-				letra = nomb+": "+campo.length;
-			}
-			return letra;
-		};
-		function validar_hora(id,nomb){
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			if (campo.length < 5) {
-				setModalAdvertencia("Error","Error al Validar Hora:","Mensaje: "+nomb+", NO Tiene el Formato Correcto: 'HH:Mi (24HH/AM-PM)'");
-				letra = nomb+": "+campo.length;
-			}
-			return letra;
-		};
-		function validar_number(id,nomb){
-			var lista = ['1','2','3','4','5','6','7','8','9','0'];
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			for (x in campo) {
-				if(!(lista.indexOf(campo[x]) > -1)){
-					setModalAdvertencia("Error","Error al Validar Number:","Mensaje: "+nomb+", Tiene Caracteres NO Válidos: '"+campo[x]+"'");
-					letra = nomb+": "+campo[x];
-					break;
-				}
-			}
-			return letra;
-		};
-		function validar_texto(id,nomb){
-			var lista = ['a','A','b','B','c','C','d','D','e','E','f','F','g','G','h','H','i','I','j','J','k','K','l','L',
-			'm','M','n','N','o','O','p','P','q','Q','r','R','s','S','t','T','u','U','v','V','w','W','x','X','y','Y','z','Z',
-			'1','2','3','4','5','6','7','8','9','0','-','_','(',')','+','=',',',';','.',':','#',' ','\n'];
-			var campo = document.getElementById(id).value;
-			var letra = "";
-			for (x in campo) {
-				if(!(lista.indexOf(campo[x]) > -1)){
-					setModalAdvertencia("Error","Error al Validar Texto:","Mensaje: "+nomb+", Tiene Caracteres NO Válidos: '"+campo[x]+"'");
-					letra = nomb+": "+campo[x];
-					break;
-				}
-			}
-			return letra;
-		};
-	</script>
+	<script type="text/javascript" src="{{url_for('static', filename='js/base.js')}}"></script>
 	
-    <!-- Bloque header del hijo.
-    Aquí el hijo puede agregar styles propios u otros headers que se necesiten. -->
+	<!-- Bloque header del hijo.
+	Aquí el hijo puede agregar styles propios u otros headers que se necesiten. -->
 	{% block header %}
-    {% endblock %}
-  </head>
-
-  <!--
-  La pantalla se compone de un contenedor que tiene los siguientes bloques:
-  ------------------------
-  |row { LOGO (base) }
-  |row {
-  |col: NOMBRE DE PANTALLA (hijo) | col: INFO CONTEXTO (hijo) |
-  |}
-  |row {
-  |container: conjunto de campos (hijo)
-  |}
-  |footer: {texto (base)} 
-
-  -->
-  <body>
-    <!-- Container base -->
-    <div class="container">
-      <!-- row logo -->
-      <div class="row" id="logorow">
-        <!-- logo lo saque de google -->  
-          <img src="{{url_for('static', filename='img/logo.png')}}" id="logo">
-      </div>
-      <!-- row screen name | info de contexto -->
-      <div class="row" id="master_row">
-          <!-- screen name -->
-          <div class="col-6">
-            {% block screen_name %}
-            {% endblock %}
-          <!-- info de contexto (si es que existe, caso contrario se omite) -->
-          </div>
-          <div class="col-6" id="col_contexto">
-            {% block info_contexto %}
-            {% endblock %}
-          </div>
-      </div>
-      <!-- row contenedor de campos -->
-      <div class="row">
-          <div class="container h-100">
-			<!-- div del gif con el loader, parte hidden -->
-			<div id="loader" style="display: none;">
-				<center>
-					<img src="{{url_for('static',filename='img/ajax-loader.gif')}}">
-				</center>
+	{% endblock %}
+</head>
+	<!--
+	La pantalla se compone de un contenedor que tiene los siguientes bloques:
+	------------------------
+	|row { LOGO (base) }
+	|row {
+	|col: NOMBRE DE PANTALLA (hijo) | col: INFO CONTEXTO (hijo) |
+	|}
+	|row {
+	|container: conjunto de campos (hijo)
+	|}
+	|footer: {texto (base)} 
+	-->
+<body>
+	<!-- Container base -->
+	<div class="container">
+		<!-- row logo -->
+		<div class="row" id="logorow">
+			<!-- logo lo saque de google -->  
+			<img src="{{url_for('static', filename='img/logo.png')}}" id="logo">
+		</div>
+		<!-- row screen name | info de contexto -->
+		<div class="row" id="master_row">
+			<!-- screen name -->
+			<div class="col-6">
+				{% block screen_name %}
+				{% endblock %}
 			</div>
-
-			<!-- Modal -->
-			<div class="modal fade" id="modalAdvertencia" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
-			  <div class="modal-dialog modal-dialog-centered" role="document">
-				<div class="modal-content">
-				  <div class="modal-header">
-					<h5 class="modal-title" id="modalAdvertenciaTitle">TITULO</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					  <span aria-hidden="true">&times;</span>
-					</button>
-				  </div>
-				  <div class="modal-body">
-					<p id="modalAdvertenciaMensaje">MENSAJE</p>
-				  </div>
-				  <div class="modal-footer">
-					<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>
-				  </div>
+			<div class="col-6" id="col_contexto">
+				{% block info_contexto %}
+				{% endblock %}
+			</div>
+		</div>
+		<!-- row contenedor de campos -->
+		<div class="row">
+			<div class="container h-100">
+				<!-- div del gif con el loader, parte hidden -->
+				<div id="loader" style="display: none;">
+					<center><img src="{{url_for('static',filename='img/ajax-loader.gif')}}"></center>
 				</div>
-			  </div>
+				
+				<!-- Modal -->
+				<div class="modal fade" id="modalAdvertencia" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+					<div class="modal-dialog modal-dialog-centered" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="modalAdvertenciaTitle">TITULO</h5>
+								<!--<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>-->
+							</div>
+							<div class="modal-body">
+								<p id="modalAdvertenciaMensaje">MENSAJE</p>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-info" onclick="cerrarModal()">Cerrar</button>
+								<!--<button type="button" class="btn btn-info" data-dismiss="modal">Cerrar</button>-->
+							</div>
+						</div>
+					</div>
+				</div>
+				{% block field_container %}
+				{% endblock %}
 			</div>
-            {% block field_container %}
-            {% endblock %}
-          </div>
-      </div>
-    </div>
-
+		</div>
+	</div>
+	
     <!--    JQUERY    -->
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-  </body>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+</body>
 </html>

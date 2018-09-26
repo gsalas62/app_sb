@@ -44,6 +44,7 @@
 			document.getElementById("InputSalida").readOnly = true;
 			document.getElementById("InputBandeja").readOnly = false;
 			document.getElementById("CamionRobado").disabled = false;
+			$("#InputBandeja").focus();
 		};
 		
 		function correcto_RegBandeja(cant_bandejas){
@@ -51,9 +52,11 @@
 			document.getElementById("ReadCantidad").value = cant_bandejas;
 			document.getElementById("CamionRobado").disabled = true;
 			document.getElementById("TermRevBultos").disabled = false;
+			$("#InputBandeja").focus();
 		};
 		
 		function correcto_RevBulto(link_voucher){
+			focusId = "InputHora";
 			titulo = "Al Terminar Revision:";
 			imprimir_voucher(link_voucher);
 			
@@ -61,6 +64,7 @@
 		};
 		
 		function correcto_AlertaRobo(link_voucher){
+			focusId = "InputHora";
 			titulo = "Al Alertar Robo:";
 			imprimir_voucher(link_voucher);
 			
@@ -68,6 +72,7 @@
 		};
 		
 		function ServRevBultos(){
+			focusId = "";
 			$.getJSON($SCRIPT_ROOT + '/revisabultos',{
 				nro_salida: $("#InputSalida").val(),
 				respuesta: resp
@@ -76,28 +81,34 @@
 				if(data.cod_status == 0){
 					correcto_RevBulto(data.link_voucher);
 				}else if(data.cod_status == 1){
+					focusId = "TermRevBultos";
 					setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: "+data.msg_status);
 				}else if(data.cod_status == 2){
 					ReproducirAlerta("Pregunta");
 					if(confirm(data.msg_status)){
 						resp = 1;
-						setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: Confirmado");
+						////setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: Confirmado");
 						console.log($SCRIPT_ROOT);
 						ServRevBultos();
 					}else{
 						resp = 0;
+						focusId = "InputBandeja";
 						setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: Continúe Escaneando");
 					}
 				}else if(data.cod_status == 3){
 					correcto_RevBulto(data.link_voucher);
 					////setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
-				}else setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
+				}else{
+					focusId = "TermRevBultos";
+					setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
+				}
 			});
 		};
 		
 		$(function(){
 			$('#modalAdvertencia').modal({ show: false});
 			ReiniciarFormulario();
+			focusId = "";
 			
 			if ({{contexto.cod_status}} == 0){
 				$("#InputHora").focus();
@@ -106,7 +117,7 @@
 				document.getElementById("InputSalida").readOnly = true;
 				setModalAdvertencia("Error","Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}else if({{contexto.cod_status}} == 3){
-				$("#InputHora").focus();
+				focusId = "InputHora";
 				setModalAdvertencia("Mensaje","Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
 			}else {
 				document.getElementById("InputHora").readOnly = true;
@@ -115,6 +126,7 @@
 			}
 			
 			$('#InputSalida').keypress(function(event) {
+				focusId = "";
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				if (keycode == 13 & document.getElementById("InputSalida").value.length > 0) {
 					var hora = validar_hora("InputHora", "Hora Llegada");
@@ -137,17 +149,23 @@
 								correcto_RegSalida();
 							}else if(data.cod_status == 1){
 								document.getElementById("InputSalida").value = "";
+								focusId = "InputSalida";
 								setModalAdvertencia("Error","Error Al Registrar Salida:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
 								correcto_RegSalida();
+								focusId = "InputBandeja";
 								setModalAdvertencia("Mensaje","Éxito Al Registrar Salida:","Mensaje: "+data.msg_status);
-							}else setModalAdvertencia("Error","Error Al Registrar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}else{
+								focusId = "InputSalida";
+								setModalAdvertencia("Error","Error Al Registrar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
 						});
 					}
 				}
 			});
 			
 			$('#InputBandeja').keypress(function(event) {
+				focusId = "";
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				if (keycode == 13 & document.getElementById("InputBandeja").value.length > 0) {
 					var bandeja = validar_texto("InputBandeja", "Bandeja");
@@ -164,17 +182,23 @@
 								correcto_RegBandeja(data.cant_bandejas);
 							}else if(data.cod_status == 1){
 								document.getElementById("InputBandeja").value = "";
+								focusId = "InputBandeja";
 								setModalAdvertencia("Error","Error Al Registrar Bandeja:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
 								correcto_RegBandeja(data.cant_bandejas);
+								focusId = "InputBandeja";
 								setModalAdvertencia("Mensaje","Éxito Al Registrar Bandeja:","Mensaje: "+data.msg_status);
-							}else setModalAdvertencia("Error","Error Al Registrar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}else{
+								focusId = "InputBandeja";
+								setModalAdvertencia("Error","Error Al Registrar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
 						});
 					}
 				}
 			});
 			
 			$('#CamionRobado').click(function(event) {
+				focusId = "";
 				if(confirm('Seguro Que Desea Continuar?')){
 					console.log($(this).val());
 					console.log($SCRIPT_ROOT);
@@ -185,11 +209,15 @@
 						if(data.cod_status == 0){
 							correcto_AlertaRobo(data.link_voucher);
 						}else if(data.cod_status == 1){
+							focusId = "CamionRobado";
 							setModalAdvertencia("Error","Error Al Alertar Robo:","Mensaje: "+data.msg_status);
 						}else if(data.cod_status == 3){
 							correcto_AlertaRobo(data.link_voucher);
-							setModalAdvertencia("Mensaje","Éxito Al Alertar Robo:","Mensaje: "+data.msg_status);
-						}else setModalAdvertencia("Error","Error Al Alertar Robo:","Mensaje: NO HAY DATOS DE VUELTA.");
+							////setModalAdvertencia("Mensaje","Éxito Al Alertar Robo:","Mensaje: "+data.msg_status);
+						}else{
+							focusId = "CamionRobado";
+							setModalAdvertencia("Error","Error Al Alertar Robo:","Mensaje: NO HAY DATOS DE VUELTA.");
+						}
 					});
 				}
 			});
@@ -199,7 +227,7 @@
 					console.log($(this).val());
 					console.log($SCRIPT_ROOT);
 					ServRevBultos();
-				}
+				}else $("#TermRevBultos").focus();
 			});
 			
 		});

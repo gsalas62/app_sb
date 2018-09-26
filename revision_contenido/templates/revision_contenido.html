@@ -27,6 +27,7 @@
 		$(function(){
 			$('#modalAdvertencia').modal({ show: false});
 			ReiniciarFormulario();
+			focusId = "";
 			
 			if ({{contexto.cod_status}} == 0){
 				$("#InputSalida").focus();
@@ -34,7 +35,7 @@
 				document.getElementById("InputSalida").readOnly = true;
 				setModalAdvertencia("Error","Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}else if({{contexto.cod_status}} == 3){
-				$("#InputSalida").focus();
+				focusId = "InputSalida";
 				setModalAdvertencia("Mensaje","Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
 			}else {
 				document.getElementById("InputSalida").readOnly = true;
@@ -42,6 +43,7 @@
 			}
 			
 			$('#InputSalida').keypress(function(event) {
+				focusId = "";
 				var keycode = (event.keyCode ? event.keyCode : event.which);
 				if (keycode == 13 & document.getElementById("InputSalida").value.length > 0) {
 					var salida = validar_number("InputSalida", "Salida");
@@ -53,13 +55,23 @@
 							nro_salida: $("#InputSalida").val()
 						},	function(data){
 							console.log(data);
-							if(data.cod_status == 1){
-								document.getElementById("InputSalida").value = "";
-								setModalAdvertencia("Error","Error Al Validar Salida:","Mensaje: "+data.msg_status);
-							}else if(data.cod_status == 0){
+							if(data.cod_status == 0){
 								document.getElementById("InputSalida").readOnly = true;
 								document.getElementById("InputBandeja").readOnly = false;
-							}else setModalAdvertencia("Error","Error Al Validar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
+								$("#InputBandeja").focus();
+							}else if(data.cod_status == 1){
+								document.getElementById("InputSalida").value = "";
+								focusId = "InputSalida";
+								setModalAdvertencia("Error","Error Al Validar Salida:","Mensaje: "+data.msg_status);
+							}else if(data.cod_status == 3){
+								document.getElementById("InputSalida").readOnly = true;
+								document.getElementById("InputBandeja").readOnly = false;
+								focusId = "InputBandeja";
+								setModalAdvertencia("Mensaje","Éxito Al Validar Salida:","Mensaje: "+data.msg_status);
+							}else{
+								focusId = "InputSalida";
+								setModalAdvertencia("Error","Error Al Validar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
 						});
 					}
 				}
@@ -78,14 +90,25 @@
 							bandeja_pub: $("#InputBandeja").val()
 						},	function(data){
 							console.log(data);
-							if(data.cod_status == 1){
-								document.getElementById("InputBandeja").value = "";
-								setModalAdvertencia("Error","Error Al Validar Bandeja:","Mensaje: "+data.msg_status);
-							}else if(data.cod_status == 0){
+							if(data.cod_status == 0){
 								document.getElementById("InputBandeja").readOnly = true;
 								document.getElementById("InputProducto").readOnly = false;
 								document.getElementById("InputComentario").readOnly = false;
-							}else setModalAdvertencia("Error","Error Al Validar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
+								$("#InputProducto").focus();
+							}else if(data.cod_status == 1){
+								document.getElementById("InputBandeja").value = "";
+								focusId = "InputBandeja";
+								setModalAdvertencia("Error","Error Al Validar Bandeja:","Mensaje: "+data.msg_status);
+							}else if(data.cod_status == 3){
+								document.getElementById("InputBandeja").readOnly = true;
+								document.getElementById("InputProducto").readOnly = false;
+								document.getElementById("InputComentario").readOnly = false;
+								focusId = "InputProducto";
+								setModalAdvertencia("Mensaje","Éxito Al Validar Bandeja:","Mensaje: "+data.msg_status);
+							}else{
+								focusId = "InputBandeja";
+								setModalAdvertencia("Error","Error Al Validar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
 						});
 					}
 				}
@@ -105,10 +128,18 @@
 							cod_ingresado: $("#InputProducto").val()
 						},	function(data){
 							console.log(data);
-							if(data.cod_status == 1){
+							if(data.cod_status == 0){
+								document.getElementById("InputProducto").value = "";
+								document.getElementById("InputComentario").readOnly = false;
+								document.getElementById("TermRevCont").disabled = false;
+								document.getElementById("ReadCantidad").value = data.cantidad;
+								document.getElementById("ReadDescripcion").value = data.descripcion;
+								$("#InputProducto").focus();
+							else if(data.cod_status == 1){
 								document.getElementById("InputProducto").value = "";
 								document.getElementById("ReadCantidad").value = "";
 								document.getElementById("ReadDescripcion").value = "";
+								focusId = "InputProducto";
 								setModalAdvertencia("Error","Error Al Registrar Producto:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 0){
 								document.getElementById("InputProducto").value = "";
@@ -116,7 +147,12 @@
 								document.getElementById("TermRevCont").disabled = false;
 								document.getElementById("ReadCantidad").value = data.cantidad;
 								document.getElementById("ReadDescripcion").value = data.descripcion;
-							}else setModalAdvertencia("Error","Error Al Registrar Producto:","Mensaje: NO HAY DATOS DE VUELTA.");
+								focusId = "InputProducto";
+								setModalAdvertencia("Mensaje","Éxito Al Registrar Producto:","Mensaje: "+data.msg_status);
+							}else{
+								focusId = "InputProducto";
+								setModalAdvertencia("Error","Error Al Registrar Producto:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
 						});
 					}
 				}
@@ -145,13 +181,19 @@
 								document.getElementById("InputProducto").readOnly = true;
 								document.getElementById("InputComentario").readOnly = true;
 								document.getElementById("TermRevCont").disabled = true;
+								focusId = "InputBandeja";
 								setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 1){
+								focusId = "TermRevCont";
 								setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
 								ReiniciarFormulario();
+								focusId = "InputSalida";
 								setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
-							}else setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}else{
+								focusId = "TermRevCont";
+								setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
 						});
 					}
 				}
