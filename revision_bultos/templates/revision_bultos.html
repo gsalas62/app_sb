@@ -134,15 +134,12 @@
 					if (hora.length > 0) document.getElementById("InputHora").value = "";
 					else if (salida.length > 0) document.getElementById("InputSalida").value = "";
 					else{
-						var f = new Date();
-						var fecha_hora = f.getDate()+"-"+(f.getMonth()+1)+"-"+f.getFullYear()+"T"+$("#InputHora").val();
-						//var fecha_hora = '1900-01-01T'+$("#InputHora").val();
 						console.log($(this).val());
 						console.log($SCRIPT_ROOT);
 						$.getJSON($SCRIPT_ROOT + '/registrasalida',{
 							nro_salida: $("#InputSalida").val(),
 							rev_todo: $("#InputRevisar").val(),
-							hora_llegada: fecha_hora
+							hora_llegada: $("#InputHora").val();
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
