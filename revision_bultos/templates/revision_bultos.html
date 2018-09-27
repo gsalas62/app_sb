@@ -139,7 +139,7 @@
 						$.getJSON($SCRIPT_ROOT + '/registrasalida',{
 							nro_salida: $("#InputSalida").val(),
 							rev_todo: $("#InputRevisar").val(),
-							hora_llegada: $("#InputHora").val();
+							hora_llegada: $("#InputHora").val()
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
