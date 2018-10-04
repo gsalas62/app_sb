@@ -19,10 +19,10 @@ App_sb/
     |-modulos.py
     |-static/
     |-templates
-  |-revision_ciega/
+  |-revision_bultos/
     |- ...
 ``` 
-El programa se compone de un conjunto de pequeñas aplicaciones (menu, login, revisión_ciega, etc) las cuales se definen como __blueprints__, cada una de estas aplicaciones tiene la misma estructura: un '___init_.py__', un __views.py__ y carpetas __templates/__ y __static/__ (modulos.py va dependiendo de si la aplicación usará o no métodos propios).
+El programa se compone de un conjunto de pequeñas aplicaciones (menu, login, revisión_bultos, etc) las cuales se definen como __blueprints__, cada una de estas aplicaciones tiene la misma estructura: un '___init_.py__', un __views.py__ y carpetas __templates/__ y __static/__ (modulos.py va dependiendo de si la aplicación usará o no métodos propios).
 
 ___init_.py__: simplemente le dice al programa base (app_sb) que esta carpeta donde está contenido corresponde a un módulo de python.
 __views.py__: corresponde a la creación de un __blueprint__ junto a la vistas que tendrá la aplicación, una vista se puede definir un métodos que dado un path retorna algo con ese path (puede ser una página, puede ser un valor si es que se usó con AJAX, puede ser cualquier cosa).
