@@ -14,7 +14,7 @@ def _menu():
 	id_conn = session.get('id_conn', None)
 	if id_conn is None:
 		return redirect(url_for('login._login'))
+	
 	paths = Paths.apps
 	contexto = global_modulos.getInfoContexto(id_conn)
-	#return render_template('menus2.html', apps=paths)
-	return render_template('menu2.html', contexto=contexto)
+	return render_template('menu.html', contexto=contexto)

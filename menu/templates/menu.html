@@ -1,78 +1,116 @@
-{% extends 'base.html' %}
-
+{% extends 'base2.html' %}
+(% # coding: utf8 %}
 
 {% block title %}
     Menú
 {% endblock %}
 
 {% block header %}
-<style type="text/css">
-    .col-9{
-    text-align: right;
-}
-#col_contexto{
-    border: black 2px;
-}
-
-/* agrega una pequeña distancia entre filas de label-input */
-#colcontainer .row{
-    padding: 10px 10px 10px;
-}
-/* crea un margen y el color de fondo col que contiene los campos */
-#fieldcontainer{
-    padding: 10px 10px 10px;
-    background-color: #1a8dff;
-    color: white;
-}
-
-/* crea un margen en el row base que contiene todo */
-#baserow{
-}
-
-/* para alinear los label con sus inputs */
-input #form-control{
-    margin-top: 5px;
-    margin-bottom: 5px;
-    display:inline-block;
-    vertical-align:middle;
-    margin-left:20px
-}
-
-label {
-    display:inline-block;
-    float: left;
-    padding-top: 5px;
-    text-align: left;
-    width: 140px;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="{{ url_for('menu.static', filename='css/menu.css') }}">
+<script type="text/javascript">
+		$( document ).ready(function() {
+			$("#sidebar").toggleClass("toggle");
+		});
+		
+		$(function(){
+			focusId = "";
+			$('#modalAdvertencia').modal({show: false});
+			
+			if ({{contexto.cod_status}} == 0){
+				//setModalAdvertencia("Mensaje","Exito de Contexto:","Mensaje: {{contexto.msg_status}}");
+			}else if({{contexto.cod_status}} == 1){
+				document.getElementById("menu-toggle").disabled = true;
+				setModalAdvertencia("Error","Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+			}else if({{contexto.cod_status}} == 3){
+				setModalAdvertencia("Mensaje","Exito de Contexto:","Mensaje: {{contexto.msg_status}}");
+			}else {
+				document.getElementById("menu-toggle").disabled = true;
+				setModalAdvertencia("Error","Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+			}
+		});
+	</script>
 {% endblock %}
 
-{% block screen_name %}
-    <h4 style="color: #1a8dff;">Menú</h4>
-{% endblock %}
+{% block body %}
+	<div id="wrapper">
+		<!-- Sidebar -->
+		<div id="sidebar-wrapper">
+			<ul class="sidebar-nav">
+				<li class="sidebar-brand">
+					<div class="row">
+						<div class="col"> Menú </div>
+					</div>
+				</li>
+				<li>
+					<a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Recepción Ciega</a>
+					<ul class="collapse list-unstyled" id="pageSubmenu">
+						<li> <a href="{{url_for('revision_bultos._revision_bultos')}}">Revisión de Bultos</a> </li>
+						<li> <a href="{{url_for('revision_contenido._revision_contenido')}}">Revisión de Contenido</a> </li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<!-- Page Content -->
+		<nav class="navbar navbar-light bg-white">
+			<button class="navbar-toggler" href="#menu-toggle" type="button" id="menu-toggle">
+				<span class="navbar-toggler-icon"></span> Menú
+			</button>
+		</nav>
+		<div id="page-content-wrapper">
+			<div class="row">
+				<div class="col center">
+					<h1 class="titulo_pag">Recepción Ciega</h1>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col center">
+					<img src="{{url_for('static', filename='img/logo.png')}}" id="logo2">
+				</div>
+			</div>			
+			<div class="row" id="baserow">
+				<div class="col" id="fieldscol">
+					<div class="d-flex align-items-center justify-content-center h-100">
+						<div class="col" id="colx">
+							<div class="row" id="tit_contexto">
+								<div class="col center">
+									<h5>Información de Contexto</h5>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-5"><p>Empresa:</p></div>
+								<div class="col-7 right" id="id_Empresa"><p>{{contexto.Empresa}}</p></div>
+								<div class="col-5"><p>Local:</p></div>
+								<div class="col-7 right" id="id_Local"><p>{{contexto.Local}}</p></div>
+								<div class="col-5"><p>Usuario:</p></div>
+								<div class="col-7 right" id="id_Usuario"><p>{{contexto.Usuario}}</p></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-{% block info_contexto %}
-<!-- info de contexto -->
-{#
-    {% for key,value in contexto.items() %}
-    <div class="row">
-        <div class="col-3">{{key}}:</div>
-        <div class="col-9">{{value}}</div>
-    </div>
-    {% endfor %}
-#}
-{% endblock %}
-
-{% block field_container %}
-<!-- contenedor de campos -->
-<div class="row" id="fieldcontainer">
-    <div class="col" id="colcontainer">
-        {% for app, path in apps.items() %}
-        <div class="row">
-            <a href="{{path}}" class="btn btn-danger btn-block" id="ingresarId">{{app}}</a>
-        </div>
-        {% endfor %}
-    </div>
-</div>
+	<!-- Menu Toggle Script -->
+	<script>
+		$(function(){			
+			$("#menu-toggle").click(function(e) {                
+				e.preventDefault();
+				$("#wrapper").toggleClass("toggled");
+			});
+			$('body').click(function(event){
+				if ($(event.target).closest('#sidebar-wrapper').length) {
+					console.log('yeaa, clickeaste dentro we');
+					return; 
+				}
+				if (event.target.id == "menu-toggle"){
+					return;
+				} else {
+					if($("#wrapper").hasClass("toggled")){
+						$("#wrapper").toggleClass("toggled");
+					}
+				}
+			});
+		});
+	</script>
 {% endblock %}

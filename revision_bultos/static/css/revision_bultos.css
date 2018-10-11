@@ -11,17 +11,6 @@
     margin-bottom: 10px;
     align-items: left;
 }
-/* crea un margen y el color de fondo col que contiene los campos */
-#fieldscol{
-    padding: 10px 10px 10px;
-    background-color: #1a8dff;
-    color: white;
-}
-
-/* crea un margen en el row base que contiene todo */
-#baserow{
-    padding: 10px 10px 10px;
-}
 
 /* para alinear los label con sus inputs */
 input #form-control{
@@ -29,7 +18,7 @@ input #form-control{
     margin-bottom: 5px;
     display:inline-block;
     vertical-align:middle;
-    margin-left:20px
+    margin-left:20px;
 }
 
 label {

@@ -36,7 +36,6 @@ def validar_login():
 	print(respuesta)
 	
 	if respuesta.get('cod_status') == '0':
-		print('yup, está correcto 0')
 		session['id_conn'] = respuesta.get('id_conn')
 		url = {'url': url_for('menu._menu') }
 		info = json.dumps(url, ensure_ascii=False)
