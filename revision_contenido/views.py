@@ -69,3 +69,16 @@ def revisa_contenido():
 	
 	cod_status, msg_status = global_modulos.RevisaContenido(id_conn, nro_salida, bandeja_pub, glosa)
 	return jsonify(cod_status=cod_status, msg_status=msg_status)
+	
+#servicio que llama al CancelaRevContenido
+@revision_contenido.route('/cancelarevcontenido', methods=['GET'])
+def cancelarevcontenido():
+	id_conn = session.get('id_conn', None)
+	if id_conn is None:
+		return redirect('login')
+	
+	nro_salida = request.args.get('nro_salida', 0, type=int)
+	bandeja_pub = request.args.get('bandeja_pub', 0, type=str)
+	
+	cod_status, msg_status = global_modulos.CancelaRevContenido(id_conn, nro_salida, bandeja_pub)
+	return jsonify(cod_status=cod_status, msg_status=msg_status)

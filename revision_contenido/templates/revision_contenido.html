@@ -24,6 +24,10 @@
 			document.getElementById("TermRevCont").disabled = true;
 		};
 		
+		function Volver(){
+			ReiniciarFormulario();
+		};
+		
 		$(function(){
 			$('#modalAdvertencia').modal({ show: false});
 			ReiniciarFormulario();
@@ -198,6 +202,30 @@
 					}
 				}
 			});
+			
+			$('#VolverMenu').click(function(event) {
+				console.log($(this).val());
+				console.log($SCRIPT_ROOT);
+				$.getJSON($SCRIPT_ROOT + '/cancelarevcontenido',{
+					nro_salida: $("#InputSalida").val(),
+					bandeja_pub: $("#InputBandeja").val()
+				},	function(data){
+					console.log(data);
+					if(data.cod_status == 0){
+						Volver();
+					}else if(data.cod_status == 1){
+						focusId = "VolverMenu";
+						setModalAdvertencia("Error","Error Al Volver:","Mensaje: "+data.msg_status);
+					}else if(data.cod_status == 3){
+						Volver();
+						focusId = "VolverMenu";
+						setModalAdvertencia("Mensaje","Éxito Al Volver:","Mensaje: "+data.msg_status);
+					}else{
+						focusId = "VolverMenu";
+						setModalAdvertencia("Error","Error Al Volver:","Mensaje: NO HAY DATOS DE VUELTA.");
+					}
+				});
+			});
 		});
 	</script>
 {% endblock %}
@@ -276,6 +304,7 @@
         <div class="col">
             <div class="center-block text-center">
                 <button type="" class="btn btn-info" style="float: right;" id="TermRevCont">Terminar</button>
+                <button type="" class="btn btn-info" style="float: left;" id="VolverMenu">Volver</button>
             </div>
         </div>
     </div>
