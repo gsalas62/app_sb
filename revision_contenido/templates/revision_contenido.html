@@ -24,10 +24,6 @@
 			document.getElementById("TermRevCont").disabled = true;
 		};
 		
-		function Volver(){
-			ReiniciarFormulario();
-		};
-		
 		$(function(){
 			$('#modalAdvertencia').modal({ show: false});
 			ReiniciarFormulario();
@@ -204,27 +200,31 @@
 			});
 			
 			$('#VolverMenu').click(function(event) {
-				console.log($(this).val());
-				console.log($SCRIPT_ROOT);
-				$.getJSON($SCRIPT_ROOT + '/cancelarevcontenido',{
-					nro_salida: $("#InputSalida").val(),
-					bandeja_pub: $("#InputBandeja").val()
-				},	function(data){
-					console.log(data);
-					if(data.cod_status == 0){
-						Volver();
-					}else if(data.cod_status == 1){
-						focusId = "VolverMenu";
-						setModalAdvertencia("Error","Error Al Volver:","Mensaje: "+data.msg_status);
-					}else if(data.cod_status == 3){
-						Volver();
-						focusId = "VolverMenu";
-						setModalAdvertencia("Mensaje","Éxito Al Volver:","Mensaje: "+data.msg_status);
-					}else{
-						focusId = "VolverMenu";
-						setModalAdvertencia("Error","Error Al Volver:","Mensaje: NO HAY DATOS DE VUELTA.");
-					}
-				});
+				if(confirm('Seguro Que Desea Volver Al Menú?')){
+					if(document.getElementById("ReadCantidad").value.length > 0){
+						console.log($(this).val());
+						console.log($SCRIPT_ROOT);
+						$.getJSON($SCRIPT_ROOT + '/cancelarevcontenido',{
+							nro_salida: $("#InputSalida").val(),
+							bandeja_pub: $("#InputBandeja").val()
+						},	function(data){
+							console.log(data);
+							if(data.cod_status == 0){
+								IrMenu();
+							}else if(data.cod_status == 1){
+								focusId = "VolverMenu";
+								setModalAdvertencia("Error","Error Al Volver:","Mensaje: "+data.msg_status);
+							}else if(data.cod_status == 3){
+								IrMenu();
+								focusId = "VolverMenu";
+								setModalAdvertencia("Mensaje","Éxito Al Volver:","Mensaje: "+data.msg_status);
+							}else{
+								focusId = "VolverMenu";
+								setModalAdvertencia("Error","Error Al Volver:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
+						});
+					}else IrMenu();
+				}
 			});
 		});
 	</script>

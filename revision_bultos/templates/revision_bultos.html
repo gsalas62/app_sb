@@ -227,6 +227,11 @@
 				}else $("#TermRevBultos").focus();
 			});
 			
+			$('#VolverMenu').click(function(event) {
+				if(confirm('Seguro Que Desea Volver Al Menú?')){
+					IrMenu();
+				}
+			});
 		});
 	</script>
 {% endblock %}
@@ -302,6 +307,7 @@
 			<div class="center-block text-center">
 				<button class="btn btn-info" style="float: left;" id="CamionRobado">Camión Robado</button>
 				<button class="btn btn-info" style="float: right;" id="TermRevBultos">Terminar</button>
+				<button type="" class="btn btn-info" style="float: left;" id="VolverMenu">Volver</button>
 			</div>
 		</div>
 	</div>
