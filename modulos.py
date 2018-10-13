@@ -270,3 +270,31 @@ def RevisaContenido(id_conn, nro_salida, bandeja_pub, glosa):
 		msg_status = soup.find('msg_status').get_text()
 	
 	return cod_status, msg_status
+	
+def CancelaRevContenido(id_conn, nro_salida, bandeja_pub):
+	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_CancelaRevContenido/bp_cancelarevcontenido_client_ep?WSDL"
+	headers = {'content-type': 'text/xml'}
+	body = 	"""	<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+					<soap:Body>
+						<ns1:ParEntrada xmlns:ns1="http://www.Sqm_CancelaRevContenido.org">
+								<ns1:ID_Conn>"""+str(id_conn)+"""</ns1:ID_Conn>
+								<ns1:Nro_Salida>"""+str(nro_salida)+"""</ns1:Nro_Salida>
+								<ns1:Bandeja_Pub>"""+str(bandeja_pub)+"""</ns1:Bandeja_Pub>
+						</ns1:ParEntrada>
+					</soap:Body>
+				</soap:Envelope>"""
+	
+	response = requests.post(url,data=body,headers=headers)
+	soup = BeautifulSoup(str(response.content), "html.parser")
+	
+	# Estos datos son por defecto
+	cod_status = 5
+	msg_status = ""
+	
+	# Esto es para verificar que efectivamente le llegó un cod_status
+	res = soup.find_all('cod_status')
+	if len(res) > 0:
+		cod_status = soup.find('cod_status').get_text()
+		msg_status = soup.find('msg_status').get_text()
+	
+	return cod_status, msg_status

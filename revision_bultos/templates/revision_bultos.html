@@ -145,8 +145,8 @@
 							if(data.cod_status == 0){
 								correcto_RegSalida();
 							}else if(data.cod_status == 1){
-								document.getElementById("InputSalida").value = "";
 								focusId = "InputSalida";
+								document.getElementById("InputSalida").value = "";
 								setModalAdvertencia("Error","Error Al Registrar Salida:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
 								correcto_RegSalida();
@@ -154,6 +154,7 @@
 								setModalAdvertencia("Mensaje","Éxito Al Registrar Salida:","Mensaje: "+data.msg_status);
 							}else{
 								focusId = "InputSalida";
+								document.getElementById("InputSalida").value = "";
 								setModalAdvertencia("Error","Error Al Registrar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
 							}
 						});
@@ -178,8 +179,8 @@
 							if(data.cod_status == 0){
 								correcto_RegBandeja(data.cant_bandejas);
 							}else if(data.cod_status == 1){
-								document.getElementById("InputBandeja").value = "";
 								focusId = "InputBandeja";
+								document.getElementById("InputBandeja").value = "";
 								setModalAdvertencia("Error","Error Al Registrar Bandeja:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
 								correcto_RegBandeja(data.cant_bandejas);
@@ -187,6 +188,7 @@
 								setModalAdvertencia("Mensaje","Éxito Al Registrar Bandeja:","Mensaje: "+data.msg_status);
 							}else{
 								focusId = "InputBandeja";
+								document.getElementById("InputBandeja").value = "";
 								setModalAdvertencia("Error","Error Al Registrar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
 							}
 						});
@@ -227,6 +229,11 @@
 				}else $("#TermRevBultos").focus();
 			});
 			
+			$('#VolverMenu').click(function(event) {
+				if(confirm('Seguro Que Desea Volver Al Menú?')){
+					IrMenu();
+				}
+			});
 		});
 	</script>
 {% endblock %}
@@ -302,6 +309,13 @@
 			<div class="center-block text-center">
 				<button class="btn btn-info" style="float: left;" id="CamionRobado">Camión Robado</button>
 				<button class="btn btn-info" style="float: right;" id="TermRevBultos">Terminar</button>
+			</div>
+		</div>
+	</div>
+	<div class="row" style="margin-bottom:10px">
+		<div class="col">
+			<div class="center-block text-center">
+				<button type="" class="btn btn-info" style="float: left;" id="VolverMenu">Volver</button>
 			</div>
 		</div>
 	</div>
