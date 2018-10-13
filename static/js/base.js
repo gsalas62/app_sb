@@ -1,4 +1,3 @@
-var id = "";
 function ReproducirAlerta(e){
 	var rep = new Audio();
 	rep.src = "../static/sonidos/"+e+".mp3";

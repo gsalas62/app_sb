@@ -23,13 +23,30 @@
     <!-- CSS de la base: background color, img size, entre otros. -->   
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
 	<script type="text/javascript" src="{{url_for('static', filename='js/base.js')}}"></script>
-	
+	<script type="text/javascript">
+		var t;
+		
+		function ResetTimer() {
+			clearTimeout(t);
+			t = setTimeout(IrLogin, {{tiempoMax}});
+		};
+		
+		function IrMenu(){
+			setModalAdvertencia("Mensaje","Saliendo:","Mensaje: Usted Está Redirigiendose al Menú");
+			location.href = "{{url_for('menu._menu')}}";
+		};
+		
+		function IrLogin(){
+			setModalAdvertencia("Mensaje","Saliendo:","Mensaje: Usted Está Redirigiendose al Login");
+			location.href = "{{url_for('login._login')}}";
+		};
+	</script>
     <!-- Bloque header del hijo.
     Aquí el hijo puede agregar styles propios u otros headers que se necesiten. -->
     {% block header %}
     {% endblock %}
 </head>
-<body>
+<body onload="ResetTimer()" onclick="ResetTimer()" onkeypress="ResetTimer()" onscroll="ResetTimer()">
 	{% block body %}
 	{% endblock %}
 </body>

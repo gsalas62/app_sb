@@ -1,6 +1,7 @@
 from flask import Flask, redirect, url_for, render_template, request, flash, session, jsonify, Blueprint
 from flask_wtf.csrf import CSRFProtect # protector para POST request
 from .modulos import validateUser
+from config import *
 import json
 
 login = Blueprint('login',
@@ -14,8 +15,9 @@ login = Blueprint('login',
 def _login():
 	# borra todas las cookies al entrar
 	session.clear()
+	tiempoMax = Timer.SEG
 	# renderiza template
-	return render_template('login.html')
+	return render_template('login.html', tiempoMax=tiempoMax)
 	
 # método que es llamado por ajax desde template login.html
 # devuelve cod_status y msg_status si es que no se puede validar

@@ -29,7 +29,7 @@
 		
 		function ResetTimer() {
 			clearTimeout(t);
-			t = setTimeout(IrLogin, 60000);
+			t = setTimeout(IrLogin, {{tiempoMax}});
 		};
 		
 		function IrMenu(){
@@ -38,7 +38,7 @@
 		};
 		
 		function IrLogin(){
-			setModalAdvertencia("Mensaje","Saliendo:","Mensaje: Usted Está Redirigiendose al Logín");
+			setModalAdvertencia("Mensaje","Saliendo:","Mensaje: Usted Está Redirigiendose al Login");
 			location.href = "{{url_for('login._login')}}";
 		};
 	</script>

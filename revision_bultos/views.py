@@ -1,7 +1,6 @@
 from flask import Flask, redirect, url_for, render_template, request, flash, session, jsonify, Blueprint
-#from flask_wtf.csrf import CSRFProtect # protector para POST request
 from app_sb import modulos as global_modulos # modulos hechos por nosotros (servicios, etc)
-#import json # para manejar json's
+from config import *
 
 revision_bultos = Blueprint('revision_bultos',
 							__name__,
@@ -16,8 +15,9 @@ def _revision_bultos():
 	if id_conn is None:
 		return redirect('login')
 	
+	tiempoMax = Timer.SEG
 	contexto = global_modulos.getInfoContexto(id_conn)
-	return render_template('revision_bultos.html', contexto=contexto)
+	return render_template('revision_bultos.html', contexto=contexto, tiempoMax=tiempoMax)
 	
 #servicio que llama al RegistraSalida
 @revision_bultos.route('/registrasalida', methods=['GET'])#,'POST'])

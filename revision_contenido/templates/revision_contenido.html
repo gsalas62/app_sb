@@ -56,20 +56,21 @@
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
+								$("#InputBandeja").focus();
 								document.getElementById("InputSalida").readOnly = true;
 								document.getElementById("InputBandeja").readOnly = false;
-								$("#InputBandeja").focus();
 							}else if(data.cod_status == 1){
-								document.getElementById("InputSalida").value = "";
 								focusId = "InputSalida";
+								document.getElementById("InputSalida").value = "";
 								setModalAdvertencia("Error","Error Al Validar Salida:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
+								focusId = "InputBandeja";
 								document.getElementById("InputSalida").readOnly = true;
 								document.getElementById("InputBandeja").readOnly = false;
-								focusId = "InputBandeja";
 								setModalAdvertencia("Mensaje","Éxito Al Validar Salida:","Mensaje: "+data.msg_status);
 							}else{
 								focusId = "InputSalida";
+								document.getElementById("InputSalida").value = "";
 								setModalAdvertencia("Error","Error Al Validar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
 							}
 						});
@@ -91,22 +92,23 @@
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
+								$("#InputProducto").focus();
 								document.getElementById("InputBandeja").readOnly = true;
 								document.getElementById("InputProducto").readOnly = false;
 								document.getElementById("InputComentario").readOnly = false;
-								$("#InputProducto").focus();
 							}else if(data.cod_status == 1){
-								document.getElementById("InputBandeja").value = "";
 								focusId = "InputBandeja";
+								document.getElementById("InputBandeja").value = "";
 								setModalAdvertencia("Error","Error Al Validar Bandeja:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 3){
+								focusId = "InputProducto";
 								document.getElementById("InputBandeja").readOnly = true;
 								document.getElementById("InputProducto").readOnly = false;
 								document.getElementById("InputComentario").readOnly = false;
-								focusId = "InputProducto";
 								setModalAdvertencia("Mensaje","Éxito Al Validar Bandeja:","Mensaje: "+data.msg_status);
 							}else{
 								focusId = "InputBandeja";
+								document.getElementById("InputBandeja").value = "";
 								setModalAdvertencia("Error","Error Al Validar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
 							}
 						});
@@ -129,28 +131,27 @@
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
+								$("#InputProducto").focus();
 								document.getElementById("InputProducto").value = "";
 								document.getElementById("InputComentario").readOnly = false;
 								document.getElementById("TermRevCont").disabled = false;
 								document.getElementById("ReadCantidad").value = data.cantidad;
 								document.getElementById("ReadDescripcion").value = data.descripcion;
-								$("#InputProducto").focus();
 							}else if(data.cod_status == 1){
-								document.getElementById("InputProducto").value = "";
-								document.getElementById("ReadCantidad").value = "";
-								document.getElementById("ReadDescripcion").value = "";
 								focusId = "InputProducto";
+								document.getElementById("InputProducto").value = "";
 								setModalAdvertencia("Error","Error Al Registrar Producto:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 0){
+								focusId = "InputProducto";
 								document.getElementById("InputProducto").value = "";
 								document.getElementById("InputComentario").readOnly = false;
 								document.getElementById("TermRevCont").disabled = false;
 								document.getElementById("ReadCantidad").value = data.cantidad;
 								document.getElementById("ReadDescripcion").value = data.descripcion;
-								focusId = "InputProducto";
 								setModalAdvertencia("Mensaje","Éxito Al Registrar Producto:","Mensaje: "+data.msg_status);
 							}else{
 								focusId = "InputProducto";
+								document.getElementById("InputProducto").value = "";
 								setModalAdvertencia("Error","Error Al Registrar Producto:","Mensaje: NO HAY DATOS DE VUELTA.");
 							}
 						});
@@ -172,6 +173,7 @@
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
+								focusId = "InputBandeja";
 								document.getElementById("InputBandeja").value = "";
 								document.getElementById("InputProducto").value = "";
 								document.getElementById("ReadCantidad").value = "";
@@ -181,7 +183,6 @@
 								document.getElementById("InputProducto").readOnly = true;
 								document.getElementById("InputComentario").readOnly = true;
 								document.getElementById("TermRevCont").disabled = true;
-								focusId = "InputBandeja";
 								setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
 							}else if(data.cod_status == 1){
 								focusId = "TermRevCont";

@@ -2,6 +2,7 @@ from flask import Flask, redirect, url_for, render_template, request, session, B
 from modulos import * # modulos hechos por nosotros (servicios, etc)
 from .paths import Paths
 from app_sb import modulos as global_modulos
+from config import *
 
 menu = Blueprint('menu',
 				 __name__,
@@ -16,5 +17,6 @@ def _menu():
 		return redirect(url_for('login._login'))
 	
 	paths = Paths.apps
+	tiempoMax = Timer.SEG
 	contexto = global_modulos.getInfoContexto(id_conn)
-	return render_template('menu.html', contexto=contexto)
+	return render_template('menu.html', contexto=contexto, tiempoMax=tiempoMax)
