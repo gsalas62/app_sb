@@ -2,7 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Vars(object):
-    IP = '172.20.10.35'
+    IP = 'xxx.xxx.xxx.xxx'
     PORT = '5000'
 	
 class Timer(object):
