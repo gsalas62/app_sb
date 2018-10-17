@@ -5,7 +5,6 @@ function ReproducirAlerta(e){
 };
 function setModalAdvertencia(type, title, mensaje){
 	ReproducirAlerta(type);
-	$("#modalAdvertenciaIcono").src = {{url_for('static', filename='img/'+type+'.png')}};
 	$("#modalAdvertenciaTitle").text(title);
 	$("#modalAdvertenciaMensaje").text(mensaje);
 	$("#modalAdvertencia").modal('show');
