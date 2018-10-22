@@ -38,12 +38,19 @@
 			document.getElementById("TermRevBultos").disabled = true;
 		};
 		
-		function correcto_RegSalida(){
+		function correcto_RegSalida(hora_llegada_o, cant_bandejas){
 			document.getElementById("InputRevisar").readOnly = true;
 			document.getElementById("InputHora").readOnly = true;
 			document.getElementById("InputSalida").readOnly = true;
 			document.getElementById("InputBandeja").readOnly = false;
-			document.getElementById("CamionRobado").disabled = false;
+			document.getElementById("InputHora").value = hora_llegada_o;
+			document.getElementById("ReadCantidad").value = cant_bandejas;
+			if(cant_bandejas > 0){
+				document.getElementById("CamionRobado").disabled = true;
+				document.getElementById("TermRevBultos").disabled = false;
+			}else{
+				document.getElementById("CamionRobado").disabled = false;
+			}
 			$("#InputBandeja").focus();
 		};
 		
@@ -82,7 +89,7 @@
 					correcto_RevBulto(data.link_voucher);
 				}else if(data.cod_status == 1){
 					focusId = "TermRevBultos";
-					setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: "+data.msg_status);
+					setModalAdvertencia("Error","Error Al Terminar Revision:", data.msg_status);
 				}else if(data.cod_status == 2){
 					ReproducirAlerta("Pregunta");
 					if(confirm(data.msg_status)){
@@ -97,7 +104,7 @@
 					}
 				}else if(data.cod_status == 3){
 					correcto_RevBulto(data.link_voucher);
-					////setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:","Mensaje: "+data.msg_status);
+					////setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:", data.msg_status);
 				}else{
 					focusId = "TermRevBultos";
 					setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
@@ -115,10 +122,10 @@
 			}else if({{contexto.cod_status}} == 1){
 				document.getElementById("InputHora").readOnly = true;
 				document.getElementById("InputSalida").readOnly = true;
-				setModalAdvertencia("Error","Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+				setModalAdvertencia("Error","Error de Contexto:","{{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}else if({{contexto.cod_status}} == 3){
 				focusId = "InputHora";
-				setModalAdvertencia("Mensaje","Éxito de Contexto:","Mensaje: {{contexto.msg_status}}");
+				setModalAdvertencia("Mensaje","Éxito de Contexto:","{{contexto.msg_status}}");
 			}else {
 				document.getElementById("InputHora").readOnly = true;
 				document.getElementById("InputSalida").readOnly = true;
@@ -143,15 +150,15 @@
 						},	function(data){
 							console.log(data);
 							if(data.cod_status == 0){
-								correcto_RegSalida();
+								correcto_RegSalida(data.hora_llegada_o, data.cant_bandejas);
 							}else if(data.cod_status == 1){
 								focusId = "InputSalida";
 								document.getElementById("InputSalida").value = "";
-								setModalAdvertencia("Error","Error Al Registrar Salida:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Error","Error Al Registrar Salida:", data.msg_status);
 							}else if(data.cod_status == 3){
-								correcto_RegSalida();
+								correcto_RegSalida(data.hora_llegada_o, data.cant_bandejas);
 								focusId = "InputBandeja";
-								setModalAdvertencia("Mensaje","Éxito Al Registrar Salida:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Mensaje","Éxito Al Registrar Salida:", data.msg_status);
 							}else{
 								focusId = "InputSalida";
 								document.getElementById("InputSalida").value = "";
@@ -181,11 +188,11 @@
 							}else if(data.cod_status == 1){
 								focusId = "InputBandeja";
 								document.getElementById("InputBandeja").value = "";
-								setModalAdvertencia("Error","Error Al Registrar Bandeja:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Error","Error Al Registrar Bandeja:", data.msg_status);
 							}else if(data.cod_status == 3){
 								correcto_RegBandeja(data.cant_bandejas);
 								focusId = "InputBandeja";
-								setModalAdvertencia("Mensaje","Éxito Al Registrar Bandeja:","Mensaje: "+data.msg_status);
+								setModalAdvertencia("Mensaje","Éxito Al Registrar Bandeja:", data.msg_status);
 							}else{
 								focusId = "InputBandeja";
 								document.getElementById("InputBandeja").value = "";
@@ -209,10 +216,10 @@
 							correcto_AlertaRobo(data.link_voucher);
 						}else if(data.cod_status == 1){
 							focusId = "CamionRobado";
-							setModalAdvertencia("Error","Error Al Alertar Robo:","Mensaje: "+data.msg_status);
+							setModalAdvertencia("Error","Error Al Alertar Robo:", data.msg_status);
 						}else if(data.cod_status == 3){
 							correcto_AlertaRobo(data.link_voucher);
-							////setModalAdvertencia("Mensaje","Éxito Al Alertar Robo:","Mensaje: "+data.msg_status);
+							////setModalAdvertencia("Mensaje","Éxito Al Alertar Robo:", data.msg_status);
 						}else{
 							focusId = "CamionRobado";
 							setModalAdvertencia("Error","Error Al Alertar Robo:","Mensaje: NO HAY DATOS DE VUELTA.");

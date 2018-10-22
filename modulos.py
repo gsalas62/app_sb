@@ -54,16 +54,20 @@ def RegistraSalida(id_conn, nro_salida, rev_todo, hora_llegada):
 	soup = BeautifulSoup(str(response.content), "html.parser")
 	
 	# Estos datos son por defecto
+	hora_llegada_o = ""
+	cant_bandejas = ""
 	cod_status = 5
 	msg_status = ""
 	
 	# Esto es para verificar que efectivamente le llegó un cod_status
 	res = soup.find_all('cod_status')
 	if len(res) > 0:
+		hora_llegada_o = soup.find('hora_llegada').get_text()
+		cant_bandejas = soup.find('cant_bandejas').get_text()
 		cod_status = soup.find('cod_status').get_text()
 		msg_status = soup.find('msg_status').get_text()
 	
-	return cod_status, msg_status
+	return hora_llegada_o, cant_bandejas, cod_status, msg_status
 	
 def RegistraBandeja(id_conn, nro_salida, bandeja_pub):
 	url = "http://192.168.200.50:18003/soa-infra/services/RecepCiega/Serv_RegistraBandeja/bp_registrabandeja_client_ep?WSDL"

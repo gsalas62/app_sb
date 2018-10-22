@@ -30,8 +30,8 @@ def registra_salida():
 	rev_todo = request.args.get('rev_todo', 0, type=int)
 	hora_llegada = request.args.get('hora_llegada', 0, type=str)
 	
-	cod_status, msg_status = global_modulos.RegistraSalida(id_conn, nro_salida, rev_todo, hora_llegada)
-	return jsonify(cod_status=cod_status, msg_status=msg_status)
+	hora_llegada_o, cant_bandejas, cod_status, msg_status = global_modulos.RegistraSalida(id_conn, nro_salida, rev_todo, hora_llegada)
+	return jsonify(hora_llegada_o=hora_llegada_o, cant_bandejas=cant_bandejas, cod_status=cod_status, msg_status=msg_status)
 	
 #servicio que llama al RegistraBandeja
 @revision_bultos.route('/registrabandeja', methods=['GET'])
