@@ -70,11 +70,11 @@ La pantalla se compone de un contenedor que tiene los siguientes bloques:
 		<!-- row screen name | info de contexto -->
 		<div class="row" id="master_row">
 			<!-- screen name -->
-			<div class="col-6">
+			<div class="col-4">
 				{% block screen_name %}
 				{% endblock %}
 			</div>
-			<div class="col-6" id="col_contexto">
+			<div class="col-8" id="col_contexto">
 				{% block info_contexto %}
 				{% endblock %}
 			</div>
@@ -98,7 +98,10 @@ La pantalla se compone de un contenedor que tiene los siguientes bloques:
 								</button>-->
 							</div>
 							<div class="modal-body">
-								<p id="modalAdvertenciaMensaje">MENSAJE</p>
+								<div class="col-12">
+									<div class="icoModal"><img src="{{url_for('static', filename='modal/iconos/type.png')}}" id="modalAdvertenciaIcono"></div>
+									<div class="menModal" id="modalAdvertenciaMensaje">MENSAJE</div>
+								</div>
 							</div>
 							<div class="modal-footer">
 								<button type="button" class="btn btn-info" onclick="cerrarModal()">Cerrar</button>

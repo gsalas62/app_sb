@@ -37,3 +37,19 @@ falta saber sobre poner imagenes BIEN, mientras se deja así. */
 .titulo_pag{
 	color: #898a80;
 }
+
+#modalAdvertenciaIcono{
+	width: 75%;
+}
+
+.icoModal{
+	position: fixed;
+	width: 20%;
+	margin-left: -5%;
+}
+
+.menModal{
+	position: inherit;
+	width: 80%;
+	margin-left: 16%;
+}

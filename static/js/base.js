@@ -1,10 +1,12 @@
-function ReproducirAlerta(e){
+function ReproducirAlerta(type){
 	var rep = new Audio();
-	rep.src = "../static/sonidos/"+e+".mp3";
+	rep.src = "../static/modal/sonidos/"+type+".mp3";
 	rep.play();
 };
 function setModalAdvertencia(type, title, mensaje){
 	ReproducirAlerta(type);
+	var urlIco = document.getElementById("modalAdvertenciaIcono").src;
+	document.getElementById("modalAdvertenciaIcono").src = urlIco.replace("type", type);
 	$("#modalAdvertenciaTitle").text(title);
 	$("#modalAdvertenciaMensaje").text(mensaje);
 	$("#modalAdvertencia").modal('show');

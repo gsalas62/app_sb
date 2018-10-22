@@ -17,12 +17,12 @@
 			$('#modalAdvertencia').modal({show: false});
 			
 			if ({{contexto.cod_status}} == 0){
-				//setModalAdvertencia("Mensaje","Exito de Contexto:","Mensaje: {{contexto.msg_status}}");
+				//setModalAdvertencia("Mensaje","Exito de Contexto:","{{contexto.msg_status}}");
 			}else if({{contexto.cod_status}} == 1){
 				document.getElementById("menu-toggle").disabled = true;
-				setModalAdvertencia("Error","Error de Contexto:","Mensaje: {{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+				setModalAdvertencia("Error","Error de Contexto:","{{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
 			}else if({{contexto.cod_status}} == 3){
-				setModalAdvertencia("Mensaje","Exito de Contexto:","Mensaje: {{contexto.msg_status}}");
+				setModalAdvertencia("Mensaje","Exito de Contexto:","{{contexto.msg_status}}");
 			}else {
 				document.getElementById("menu-toggle").disabled = true;
 				setModalAdvertencia("Error","Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
