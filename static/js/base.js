@@ -1,6 +1,6 @@
-function ReproducirAlerta(e){
+function ReproducirAlerta(type){
 	var rep = new Audio();
-	rep.src = "../static/sonidos/"+e+".mp3";
+	rep.src = "../static/modal/sonidos/"+type+".mp3";
 	rep.play();
 };
 function setModalAdvertencia(type, title, mensaje){
