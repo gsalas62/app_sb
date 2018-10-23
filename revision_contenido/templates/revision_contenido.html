@@ -1,82 +1,263 @@
 {% extends 'base.html' %}
-
+(% # coding: utf8 %}
 
 {% block title %}
     Revisión Conenido
 {% endblock %}
 
 {% block header %}
-<style type="text/css">
-    .col-9{
-    text-align: right;
-}
-#col_contexto{
-    border: black 2px;
-}
-
-/* agrega una pequeña distancia entre filas de label-input */
-#colx .row{
-    text-align: left;
-    margin-bottom: 10px;
-    align-items: left;
-}
-/* crea un margen y el color de fondo col que contiene los campos */
-#fieldscol{
-    padding: 10px 10px 10px;
-    background-color: #1a8dff;
-    color: white;
-}
-
-/* crea un margen en el row base que contiene todo */
-#baserow{
-    padding: 10px 10px 10px;
-}
-
-/* para alinear los label con sus inputs */
-input #form-control{
-    margin-top: 5px;
-    margin-bottom: 5px;
-    display:inline-block;
-    vertical-align:middle;
-    margin-left:20px
-}
-
-label {
-    display:inline-block;
-    float: left;
-    padding-top: 5px;
-    text-align: left;
-    width: 140px;
-}
-</style>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('revision_contenido.static', filename='css/revision_contenido.css') }}">
+	<script type="text/javascript">
+		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+		
+		function ReiniciarFormulario(){
+			document.getElementById("InputSalida").value = "";
+			document.getElementById("InputBandeja").value = "";
+			document.getElementById("InputProducto").value = "";
+			document.getElementById("ReadCantidad").value = "";
+			document.getElementById("ReadDescripcion").value = "";
+			document.getElementById("InputComentario").value = "";
+			document.getElementById("InputSalida").readOnly = false;
+			document.getElementById("InputBandeja").readOnly = true;
+			document.getElementById("InputProducto").readOnly = true;
+			document.getElementById("InputComentario").readOnly = true;
+			document.getElementById("TermRevCont").disabled = true;
+		};
+		
+		$(function(){
+			$('#modalAdvertencia').modal({ show: false});
+			ReiniciarFormulario();
+			focusId = "";
+			
+			if ({{contexto.cod_status}} == 0){
+				$("#InputSalida").focus();
+			}else if({{contexto.cod_status}} == 1){
+				document.getElementById("InputSalida").readOnly = true;
+				setModalAdvertencia("Error","Error de Contexto:","{{contexto.msg_status}}\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+			}else if({{contexto.cod_status}} == 3){
+				focusId = "InputSalida";
+				setModalAdvertencia("Mensaje","Éxito de Contexto:","{{contexto.msg_status}}");
+			}else {
+				document.getElementById("InputSalida").readOnly = true;
+				setModalAdvertencia("Error","Error de Contexto:","Mensaje: NO HAY DATOS DE VUELTA.\n(SE BLOQUEARÁN TODOS LOS CAMPOS)");
+			}
+			
+			$('#InputSalida').keypress(function(event) {
+				focusId = "";
+				var keycode = (event.keyCode ? event.keyCode : event.which);
+				if (keycode == 13 & document.getElementById("InputSalida").value.length > 0) {
+					var salida = validar_number("InputSalida", "Salida");
+					if (salida.length > 0) document.getElementById("InputSalida").value = "";
+					else{
+						console.log($(this).val());
+						console.log($SCRIPT_ROOT);
+						$.getJSON($SCRIPT_ROOT + '/validasalida',{
+							nro_salida: $("#InputSalida").val()
+						},	function(data){
+							console.log(data);
+							if(data.cod_status == 0){
+								$("#InputBandeja").focus();
+								document.getElementById("InputSalida").readOnly = true;
+								document.getElementById("InputBandeja").readOnly = false;
+							}else if(data.cod_status == 1){
+								focusId = "InputSalida";
+								document.getElementById("InputSalida").value = "";
+								setModalAdvertencia("Error","Error Al Validar Salida:", data.msg_status);
+							}else if(data.cod_status == 3){
+								focusId = "InputBandeja";
+								document.getElementById("InputSalida").readOnly = true;
+								document.getElementById("InputBandeja").readOnly = false;
+								setModalAdvertencia("Mensaje","Éxito Al Validar Salida:", data.msg_status);
+							}else{
+								focusId = "InputSalida";
+								document.getElementById("InputSalida").value = "";
+								setModalAdvertencia("Error","Error Al Validar Salida:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
+						});
+					}
+				}
+			});
+			
+			$('#InputBandeja').keypress(function(event) {
+				var keycode = (event.keyCode ? event.keyCode : event.which);
+				if (keycode == 13 & document.getElementById("InputBandeja").value.length > 0) {
+					var bandeja = validar_texto("InputBandeja", "Bandeja");
+					if (bandeja.length > 0) document.getElementById("InputBandeja").value = "";
+					else {
+						console.log($(this).val());
+						console.log($SCRIPT_ROOT);
+						$.getJSON($SCRIPT_ROOT + '/validabandeja',{
+							nro_salida: $("#InputSalida").val(),
+							bandeja_pub: $("#InputBandeja").val()
+						},	function(data){
+							console.log(data);
+							if(data.cod_status == 0){
+								$("#InputProducto").focus();
+								document.getElementById("InputBandeja").readOnly = true;
+								document.getElementById("InputProducto").readOnly = false;
+								document.getElementById("InputComentario").readOnly = false;
+							}else if(data.cod_status == 1){
+								focusId = "InputBandeja";
+								document.getElementById("InputBandeja").value = "";
+								setModalAdvertencia("Error","Error Al Validar Bandeja:", data.msg_status);
+							}else if(data.cod_status == 3){
+								focusId = "InputProducto";
+								document.getElementById("InputBandeja").readOnly = true;
+								document.getElementById("InputProducto").readOnly = false;
+								document.getElementById("InputComentario").readOnly = false;
+								setModalAdvertencia("Mensaje","Éxito Al Validar Bandeja:", data.msg_status);
+							}else{
+								focusId = "InputBandeja";
+								document.getElementById("InputBandeja").value = "";
+								setModalAdvertencia("Error","Error Al Validar Bandeja:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
+						});
+					}
+				}
+			});
+			
+			$('#InputProducto').keypress(function(event) {
+				var keycode = (event.keyCode ? event.keyCode : event.which);
+				if (keycode == 13 & document.getElementById("InputProducto").value.length > 0) {
+					var producto = validar_texto("InputProducto", "Producto");
+					if (producto.length > 0) document.getElementById("InputProducto").value = "";
+					else {
+						console.log($(this).val());
+						console.log($SCRIPT_ROOT);
+						$.getJSON($SCRIPT_ROOT + '/registraproducto',{
+							nro_salida: $("#InputSalida").val(),
+							bandeja_pub: $("#InputBandeja").val(),
+							cod_ingresado: $("#InputProducto").val()
+						},	function(data){
+							console.log(data);
+							if(data.cod_status == 0){
+								$("#InputProducto").focus();
+								document.getElementById("InputProducto").value = "";
+								document.getElementById("InputComentario").readOnly = false;
+								document.getElementById("TermRevCont").disabled = false;
+								document.getElementById("ReadCantidad").value = data.cantidad;
+								document.getElementById("ReadDescripcion").value = data.descripcion;
+							}else if(data.cod_status == 1){
+								focusId = "InputProducto";
+								document.getElementById("InputProducto").value = "";
+								setModalAdvertencia("Error","Error Al Registrar Producto:", data.msg_status);
+							}else if(data.cod_status == 0){
+								focusId = "InputProducto";
+								document.getElementById("InputProducto").value = "";
+								document.getElementById("InputComentario").readOnly = false;
+								document.getElementById("TermRevCont").disabled = false;
+								document.getElementById("ReadCantidad").value = data.cantidad;
+								document.getElementById("ReadDescripcion").value = data.descripcion;
+								setModalAdvertencia("Mensaje","Éxito Al Registrar Producto:", data.msg_status);
+							}else{
+								focusId = "InputProducto";
+								document.getElementById("InputProducto").value = "";
+								setModalAdvertencia("Error","Error Al Registrar Producto:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
+						});
+					}
+				}
+			});
+			
+			$('#TermRevCont').click(function(event) {
+				var texto = validar_texto("InputComentario", "Comentario Termino");
+				if (texto.length > 0) document.getElementById("InputComentario").value = "";
+				else{
+					if(confirm('Seguro Que Desea Continuar?')){
+						console.log($(this).val());
+						console.log($SCRIPT_ROOT);
+						$.getJSON($SCRIPT_ROOT + '/revisacontenido',{
+							nro_salida: $("#InputSalida").val(),
+							bandeja_pub: $("#InputBandeja").val(),
+							glosa: $("#InputComentario").val()
+						},	function(data){
+							console.log(data);
+							if(data.cod_status == 0){
+								focusId = "InputBandeja";
+								document.getElementById("InputBandeja").value = "";
+								document.getElementById("InputProducto").value = "";
+								document.getElementById("ReadCantidad").value = "";
+								document.getElementById("ReadDescripcion").value = "";
+								document.getElementById("InputComentario").value = "";
+								document.getElementById("InputBandeja").readOnly = false;
+								document.getElementById("InputProducto").readOnly = true;
+								document.getElementById("InputComentario").readOnly = true;
+								document.getElementById("TermRevCont").disabled = true;
+								setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:", data.msg_status);
+							}else if(data.cod_status == 1){
+								focusId = "TermRevCont";
+								setModalAdvertencia("Error","Error Al Terminar Revision:", data.msg_status);
+							}else if(data.cod_status == 3){
+								ReiniciarFormulario();
+								focusId = "InputSalida";
+								setModalAdvertencia("Mensaje","Éxito Al Terminar Revision:", data.msg_status);
+							}else{
+								focusId = "TermRevCont";
+								setModalAdvertencia("Error","Error Al Terminar Revision:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
+						});
+					}
+				}
+			});
+			
+			$('#VolverMenu').click(function(event) {
+				if(confirm('Seguro Que Desea Volver Al Menú?')){
+					if(document.getElementById("ReadCantidad").value.length > 0){
+						console.log($(this).val());
+						console.log($SCRIPT_ROOT);
+						$.getJSON($SCRIPT_ROOT + '/cancelarevcontenido',{
+							nro_salida: $("#InputSalida").val(),
+							bandeja_pub: $("#InputBandeja").val()
+						},	function(data){
+							console.log(data);
+							if(data.cod_status == 0){
+								IrMenu();
+							}else if(data.cod_status == 1){
+								focusId = "VolverMenu";
+								setModalAdvertencia("Error","Error Al Volver:", data.msg_status);
+							}else if(data.cod_status == 3){
+								IrMenu();
+								focusId = "VolverMenu";
+								setModalAdvertencia("Mensaje","Éxito Al Volver:", data.msg_status);
+							}else{
+								focusId = "VolverMenu";
+								setModalAdvertencia("Error","Error Al Volver:","Mensaje: NO HAY DATOS DE VUELTA.");
+							}
+						});
+					}else IrMenu();
+				}
+			});
+		});
+	</script>
 {% endblock %}
 
 {% block screen_name %}
-    <h4 style="color: #1a8dff;">Revisión de Contenido</h4>
+	<h4 class="titulo_pag">Revisión de Contenido</h4>
 {% endblock %}
 
 {% block info_contexto %}
-<!-- info de contexto -->
-    {% for key,value in contexto.items() %}
-    <div class="row">
-        <div class="col-3">{{key}}:</div>
-        <div class="col-9" id="id_{{key}}">{{value}}</div>
-    </div>
-    {% endfor %}
+	<div class="row">
+		<div class="col-3">Empresa:</div>
+		<div class="col-9" id="id_Empresa">{{contexto.Empresa}}</div>
+		<div class="col-3">Local:</div>
+		<div class="col-9" id="id_Local">{{contexto.Local}}</div>
+		<div class="col-3">Usuario:</div>
+		<div class="col-9" id="id_Usuario">{{contexto.Usuario}}</div>
+	</div>
 {% endblock %}
 
 {% block field_container %}
-<!-- contenedor de campos -->
+	<!-- contenedor de campos -->
     <div class="row" id="baserow">
         <div class="col" id="fieldscol">
             <div class="d-flex align-items-center justify-content-center h-100">
                 <div class="col" id="colx">
-                    <div class="row" style="margin-top: 10px;">
+					<div class="row" style="margin-top: 10px;">
                         <div class="col-5">
                             <label>Salida:</label>
                         </div>
                         <div class="col">
-                            <input type="number" class="form-control" id="salidaInput" required>
+                            <input type="text" class="form-control" id="InputSalida">
                         </div>
                     </div>
                     <div class="row">
@@ -84,7 +265,7 @@ label {
                             <label>Bandeja:</label>
                         </div>
                         <div class="col">
-                            <input type="text" class="form-control" id="bandejaInput" required>
+                            <input type="text" class="form-control" id="InputBandeja">
                         </div>
                     </div>
                     <div class="row">
@@ -92,30 +273,39 @@ label {
                             <label>Producto:</label>
                         </div>
                         <div class="col">
-                            <input type="text" class="form-control" id="productoInput" required>
+                            <input type="text" class="form-control" id="InputProducto">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-5">
-                            <label>Cantidad:</label>
+                            <label style="margin:-15px 0">Cantidad /</br>Descripción:</label>
                         </div>
                         <div class="col">
-                            <input type="number" class="form-control" id="cantidadInput" readonly="">
+                            <input type="number" class="form-control" id="ReadCantidad" style="text-align: right;" readonly="">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col">
-                            <input type="text" class="form-control" id="nomberInput" placeholder="Aspirina" readonly="">
+                            <input type="text" class="form-control" id="ReadDescripcion" placeholder="" readonly="">
                         </div>
                     </div>
+					<div class="row">
+						<div class="col-5">
+							<label>Comentario Termino:</label>
+						</div>
+						<div class="col-7">
+							<textarea rows="2" cols="20" maxlength='240' class="form-control" id="InputComentario"></textarea>
+						</div>
+					</div>
                 </div>
-            </div><!-- flex align-items-center -->
-        </div><!-- col -->
-    </div><!-- baserow -->    
-    <div class="row" style="margin-top: 10px;">
+            </div>
+        </div>
+    </div>    
+    <div class="row" style="margin-bottom:10px">
         <div class="col">
             <div class="center-block text-center">
-                <button type="submit" class="btn btn-info" style="float: right;">Terminar</button>
+                <button type="" class="btn btn-info" style="float: right;" id="TermRevCont">Terminar</button>
+                <button type="" class="btn btn-info" style="float: left;" id="VolverMenu">Volver</button>
             </div>
         </div>
     </div>

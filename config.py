@@ -2,8 +2,12 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Vars(object):
-    IP = '192.168.1.152'
+    IP = 'xxx.xxx.xxx.xxx'
     PORT = '5000'
+	
+class Timer(object):
+    SEG = '90000'
+	
 
 class Config(object):
     DEBUG = False
@@ -13,17 +17,14 @@ class Config(object):
     
 class ProductionConfig(Config):
     DEBUG = False
-
-
+	
 class StagingConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
-
-
+	
 class DevelopmentConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
-
-
+	
 class TestingConfig(Config):
     TESTING = True
