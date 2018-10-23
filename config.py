@@ -8,6 +8,9 @@ class Vars(object):
 class Timer(object):
     SEG = '90000'
 	
+class Server(object):
+    LINK = '192.168.200.50:18003/soa-infra/services'
+	
 
 class Config(object):
     DEBUG = False
