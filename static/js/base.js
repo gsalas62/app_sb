@@ -6,7 +6,10 @@ function ReproducirAlerta(type){
 function setModalAdvertencia(type, title, mensaje){
 	ReproducirAlerta(type);
 	var urlIco = document.getElementById("modalAdvertenciaIcono").src;
-	document.getElementById("modalAdvertenciaIcono").src = urlIco.replace("type", type);
+	var entre1 = urlIco.lastIndexOf("/");
+    var entre2 = urlIco.lastIndexOf(".png");
+    var icono = urlIco.substring(entre1+1, entre2);
+	document.getElementById("modalAdvertenciaIcono").src = urlIco.replace(icono, type);
 	$("#modalAdvertenciaTitle").text(title);
 	$("#modalAdvertenciaMensaje").text(mensaje);
 	$("#modalAdvertencia").modal('show');
