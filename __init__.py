@@ -2,7 +2,7 @@ from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 from config import * # config local
 from modulos import * # modulos hechos por nosotros
-#comentario
+
 # se instancia la app
 app = Flask(__name__)
 print(__name__)
