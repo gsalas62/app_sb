@@ -6,7 +6,7 @@ class Vars(object):
     PORT = '5000'
 	
 class Timer(object):
-    SEG = '60000'
+    SEG = '90000'
 	
 
 class Config(object):
