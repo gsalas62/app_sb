@@ -4,8 +4,8 @@ from config import * # config local
 from modulos import * # modulos hechos por nosotros
 
 # se instancia la app
-app = Flask(__name__)
-print(__name__)
+app = Flask(Aplication.NAME)
+print(Aplication.NAME)
 
 # Se instancia csrf (token de seguridad para métodos POST) 
 csrf = CSRFProtect() 
