@@ -2,11 +2,11 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Vars(object):
-    IP = 'xxx.xxx.xxx.xxx'
+    IP = '172.20.10.35'
     PORT = '5000'
 	
 class Timer(object):
-    SEG = '90000'
+    SEG = '9000000'
 	
 class Server(object):
     LINK = '192.168.200.50:18003/soa-infra/services'
