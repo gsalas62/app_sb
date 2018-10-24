@@ -1,5 +1,5 @@
 from flask import Flask, redirect, url_for, render_template, request, flash, session, jsonify, Blueprint
-from app_sb import modulos as global_modulos # modulos hechos por nosotros (servicios, etc)
+import modulos as global_modulos # modulos hechos por nosotros (servicios, etc)
 from config import *
 
 revision_bultos = Blueprint('revision_bultos',
