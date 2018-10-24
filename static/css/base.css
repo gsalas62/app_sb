@@ -38,6 +38,14 @@ falta saber sobre poner imagenes BIEN, mientras se deja así. */
 	color: #898a80;
 }
 
+#col_screen_name{
+	margin-left: -5%;
+}
+
+#col_contexto{
+	margin-left: -8%;
+	margin-right: -18%;
+}
 #modalAdvertenciaIcono{
 	width: 75%;
 }
