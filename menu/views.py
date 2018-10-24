@@ -1,7 +1,7 @@
 from flask import Flask, redirect, url_for, render_template, request, session, Blueprint
 from modulos import * # modulos hechos por nosotros (servicios, etc)
 from .paths import Paths
-from app_sb import modulos as global_modulos
+import modulos as global_modulos
 from config import *
 
 menu = Blueprint('menu',
