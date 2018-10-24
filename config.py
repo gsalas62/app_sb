@@ -11,7 +11,10 @@ class Timer(object):
 class Server(object):
     LINK = '192.168.200.50:18003/soa-infra/services'
 	
-
+class Aplication(object):
+    NAME = 'RCM'
+	
+	
 class Config(object):
     DEBUG = False
     TESTING = False
